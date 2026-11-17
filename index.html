@@ -66,12 +66,9 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .wrap{max-width:none;margin:0}
 @media (min-width:1600px){:root{--z:1.12}}
 @media (min-width:1900px){:root{--z:1.22}}
-@media (min-width:1600px){.shell,.modal,.drawer,.asst,.fab,.pop,.toasts{zoom:var(--z)}
+@media (min-width:1600px){.shell{zoom:var(--z)}
  .shell,.main{height:calc(100dvh / var(--z))}
- .drawer{height:calc(100dvh / var(--z));bottom:auto}
- .modal{width:calc(100vw / var(--z));height:calc(100dvh / var(--z));inset:auto;top:0;left:0}
- .mbox{max-height:calc(100dvh / var(--z) - 40px)}
- .asst{height:min(640px,calc(100dvh / var(--z) - 44px))}}
+ .mbox{width:min(860px,100%)}.drawer{width:min(860px,100vw)}.asst{width:440px}}
 /* ---------- primitives ---------- */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
 .cp{padding:18px 20px}
@@ -581,6 +578,11 @@ button.tagc:hover{background:#E6E4DD}button.tagc.on{background:var(--ink);color:
 @media (max-width:760px){.banner{flex-wrap:wrap}.banner .bx{flex:1 1 calc(100% - 40px)}.pres .pb .dots,.pres .pb>span:nth-of-type(1){display:none}.pres .pb{gap:8px;padding:10px 12px}}
 @media (max-width:760px){.hm{display:none}.lr.rl{grid-template-columns:1fr!important;grid-template-areas:none!important}.lr.rl>*{grid-area:auto!important;justify-self:start!important;display:block!important}.dh .r0{flex-wrap:wrap}}
 
+.lart h1{font-size:60px;max-width:640px}
+.lart p{font-size:18px;max-width:560px;margin-top:20px;line-height:1.5}
+.lart .qs{margin-bottom:auto;max-width:640px;gap:10px;margin-top:30px}
+.lart .qs span{font-size:14px;padding:8px 15px}
+@media (max-width:760px){.lart h1{font-size:32px}.lart p{font-size:15px}.lart .qs span{font-size:12.5px;padding:6px 12px}}
 /* ---------- menu recolhível ---------- */
 .sidet{display:grid}
 .shell{transition:grid-template-columns .2s}
@@ -1039,10 +1041,10 @@ function hbars(rows){const max=Math.max(1,...rows.map(r=>r.v));return `<div styl
 
 /* =============== shell v2 =============== */
 const NAV=[['Operação'],['visao-geral','Visão Geral','grid'],['entrada','Entrada','inbox'],['demandas','Demandas','layers'],['minha-carteira','Minha Carteira','brief'],['calendario','Calendário','cal'],
- ['Gestão'],['radar','Radar de riscos','radar'],['equipe','Equipe e carga','users'],['reunioes','Pautas e relatórios','note'],['indicadores','Indicadores','chart'],
+ ['Gestão'],['radar','Radar de riscos','radar'],['equipe','Equipe e carga','users'],['reunioes','Reuniões e relatórios','note'],['indicadores','Indicadores','chart'],
  ['Inovação'],['ideias','Banco de ideias','bulb'],['conhecimento','Conhecimento','book'],
  ['—'],['historico','Histórico','hist'],['configuracoes','Configurações','cog']];
-const TITLES={'visao-geral':['Visão Geral',''],entrada:['Central de entrada','Solicitações recebidas: avaliar, priorizar e encaminhar'],demandas:['Demandas','Tudo o que a equipe está conduzindo'],'minha-carteira':['Minha Carteira','O que está com você agora'],calendario:['Calendário','Prazos, reuniões, eventos e marcos'],radar:['Radar de riscos','Antecipe problemas antes que virem atrasos'],equipe:['Equipe e carga','Distribuição do trabalho e simulação de cenários'],membro:['Equipe e carga','Painel individual'],reunioes:['Pautas e relatórios','Gerados automaticamente a partir dos dados'],indicadores:['Indicadores','Desempenho coletivo e evolução da unidade'],ideias:['Banco de ideias','Da ideia à implementação'],conhecimento:['Central de conhecimento','Modelos, referências, soluções e aprendizados'],historico:['Histórico','Registro de todas as movimentações'],configuracoes:['Configurações','Regras, permissões e requisitos de encerramento']};
+const TITLES={'visao-geral':['Visão Geral',''],entrada:['Central de entrada','Solicitações recebidas: avaliar, priorizar e encaminhar'],demandas:['Demandas','Tudo o que a equipe está conduzindo'],'minha-carteira':['Minha Carteira','O que está com você agora'],calendario:['Calendário','Prazos, reuniões, eventos e marcos'],radar:['Radar de riscos','Antecipe problemas antes que virem atrasos'],equipe:['Equipe e carga','Distribuição do trabalho e simulação de cenários'],membro:['Equipe e carga','Painel individual'],reunioes:['Reuniões e relatórios','Pautas, anotações, decisões e encaminhamentos de cada reunião'],indicadores:['Indicadores','Desempenho coletivo e evolução da unidade'],ideias:['Banco de ideias','Da ideia à implementação'],conhecimento:['Central de conhecimento','Modelos, referências, soluções e aprendizados'],historico:['Histórico','Registro de todas as movimentações'],configuracoes:['Configurações','Regras, permissões e requisitos de encerramento']};
 function logo(s=30){return `<svg width="${s}" height="${s}" viewBox="0 0 32 32"><rect width="32" height="32" rx="9" fill="#00549A"/><rect x="19" y="5" width="8" height="8" rx="2.5" fill="#C8F04A"/><path d="M7.5 25 13.2 9h3.4l5.7 16h-3.5l-1.2-3.6h-5.9L10.5 25H7.5Zm5.6-6.4h4.1l-2-6.2-2.1 6.2Z" fill="#fff"/></svg>`}
 function shell(){
  const A=alerts(),mine=active().filter(d=>d.owner===S.me),mineHot=mine.filter(d=>late(d)||soon(d)).length;
@@ -1100,7 +1102,7 @@ VIEWS['visao-geral']=()=>{
  const over1=A.filter(a=>a.k==='over').map(a=>first(a.mem));
  return `<div class="anim">
  <div class="toprow"><section class="hero"><div style="position:relative;z-index:1"><h2>${greet}, ${first(S.me)}. A ASID tem <em>${act.length} demandas ativas</em>.</h2><p>${L.length?`Hoje há ${plural(L.length,'demanda atrasada','demandas atrasadas')}`:'Hoje não há demandas atrasadas'}${SO.length?` e ${plural(SO.length,'prazo','prazos')} nos próximos ${DB.settings.soonDays} dias`:''}. ${helps.length?`${plural(helps.length,'pedido','pedidos')} de ajuda em aberto. `:''}${over1.length?`${over1.join(', ')} ${over1.length>1?'estão':'está'} acima do limite de carga.`:'A carga da equipe está equilibrada.'}</p>
- <div class="tags"><button data-act="go" data-x="radar">${ic('radar',13)}Radar: ${crit} críticas · ${att} em atenção</button>${newIn?`<button data-act="go" data-x="entrada">${ic('inbox',13)}${plural(newIn,'nova solicitação','novas solicitações')}</button>`:''}<button data-act="go" data-x="reunioes">${ic('note',13)}Gerar pauta</button><button data-act="pres">${ic('present',13)}Modo apresentação</button></div></div>
+ <div class="tags"><button data-act="go" data-x="radar">${ic('radar',13)}Radar: ${crit} críticas · ${att} em atenção</button>${newIn?`<button data-act="go" data-x="entrada">${ic('inbox',13)}${plural(newIn,'nova solicitação','novas solicitações')}</button>`:''}<button data-act="mtNewGo">${ic('note',13)}Nova reunião</button><button data-act="pres">${ic('present',13)}Modo apresentação</button></div></div>
  <div class="ring">${ring(pct,92,10)}<small>progresso médio<br>das demandas ativas</small></div></section>
  <section class="card helpsq"><div class="ch" style="margin-bottom:8px"><span style="color:#E07A1F">${ic('help',16)}</span><h3>Pedidos de ajuda</h3><span class="r badge" style="background:${helps.length?'#FFF3E8':'var(--line2)'};color:${helps.length?'#B5600F':'var(--mute)'}">${helps.length}</span></div>
  <div class="hlist">${helps.map(({d,hp})=>`<div class="hq" data-act="open" data-x="${d.id}" title="${esc(hp.text)}">${av(hp.by,28)}<div class="hqt"><b>${first(hp.by)}</b> · ${hp.type.toLowerCase()}<small>${d.code} · ${esc(d.title)}</small></div>${hp.by!==S.me?`<button class="btn sm acc" data-act="helpme" data-x="${d.id}|${hp.id}" title="Posso ajudar">${ic('heart',13)}</button>`:''}</div>`).join('')||'<div class="empty" style="padding:14px">Nenhum pedido em aberto.</div>'}</div></section></div>
@@ -1379,8 +1381,9 @@ VIEWS.calendario=()=>{
  const {y,m}=S.cal,startOff=(new Date(y,m,1).getDay()+6)%7,gs=iso(new Date(y,m,1-startOff)),L=filtered(),f=S.f,ct=S.ctypes;
  const evs=DB.events.filter(e=>ct[e.type]&&(!f.owner||e.people.includes(f.owner))&&(!f.prio||e.prio===f.prio)&&(!f.cat||e.category===f.cat));
  const byDay={};if(ct.prazos)L.forEach(d=>{if(d.due)(byDay[d.due]=byDay[d.due]||[]).push({d})});const gEnd=addDays(gs,41);evs.forEach(e=>{const end=e.dateEnd&&e.dateEnd>e.date?e.dateEnd:e.date;for(let d=e.date>gs?e.date:gs;d<=end&&d<=gEnd;d=addDays(d,1))(byDay[d]=byDay[d]||[]).push({e})});
+ if(ct.reuniao)(DB.meetings||[]).filter(m=>!f.owner||(m.people||[]).includes(f.owner)).forEach(m=>{if(m.date>=gs&&m.date<=gEnd)(byDay[m.date]=byDay[m.date]||[]).push({mt:m})});
  if(ct.ferias)FERIAS.filter(v=>!f.owner||v.user===f.owner).forEach(v=>{for(let d=v.ini>gs?v.ini:gs;d<=v.fim&&d<=gEnd;d=addDays(d,1))(byDay[d]=byDay[d]||[]).push({v})});
- const item=x=>{if(x.v){const c=ETYPES.ferias.c;return `<button class="cev ev" style="background:${tint(c,.12)};border-color:${c};color:${c}" data-act="ferias" data-x="${x.v.id}" title="${esc(M(x.v.user).name)} · ${x.v.aus?'ausência':'férias'} ${fd(x.v.ini)}–${fd(x.v.fim)}">🌴 ${esc(first(x.v.user))}${x.v.status==='solicitada'?' (solic.)':''}</button>`}if(x.e){const c=ETYPES[x.e.type].c;return `<button class="cev ev" style="background:${tint(c,.1)};border-color:${c};color:${c}" data-act="event" data-x="${x.e.id}" title="${esc(x.e.title)}">${x.e.time?x.e.time+' ':''}${x.e.type==='marco'?'◆ ':''}${esc(x.e.title)}</button>`}const d=x.d,c=late(d)?'#E5484D':STATUS[d.status].c;return `<button class="cev" style="background:${tint(c,.1)};border-color:${c};color:${c==='#8A8F9C'?'#555':c}" data-act="open" data-x="${d.id}" title="Prazo: ${esc(d.title)}">${d.priority==='urgente'?'⚡':''}${esc(d.title)}</button>`};
+ const item=x=>{if(x.mt){const c=ETYPES.reuniao.c;return `<button class="cev ev" style="background:${tint(c,.12)};border-color:${c};color:${c}" data-act="meeting" data-x="${x.mt.id}" title="${esc(x.mt.title)}">${x.mt.time?x.mt.time+' ':''}${esc(x.mt.title)}</button>`}if(x.v){const c=ETYPES.ferias.c;return `<button class="cev ev" style="background:${tint(c,.12)};border-color:${c};color:${c}" data-act="ferias" data-x="${x.v.id}" title="${esc(M(x.v.user).name)} · ${x.v.aus?'ausência':'férias'} ${fd(x.v.ini)}–${fd(x.v.fim)}">🌴 ${esc(first(x.v.user))}${x.v.status==='solicitada'?' (solic.)':''}</button>`}if(x.e){const c=ETYPES[x.e.type].c;return `<button class="cev ev" style="background:${tint(c,.1)};border-color:${c};color:${c}" data-act="event" data-x="${x.e.id}" title="${esc(x.e.title)}">${x.e.time?x.e.time+' ':''}${x.e.type==='marco'?'◆ ':''}${esc(x.e.title)}</button>`}const d=x.d,c=late(d)?'#E5484D':STATUS[d.status].c;return `<button class="cev" style="background:${tint(c,.1)};border-color:${c};color:${c==='#8A8F9C'?'#555':c}" data-act="open" data-x="${d.id}" title="Prazo: ${esc(d.title)}">${d.priority==='urgente'?'⚡':''}${esc(d.title)}</button>`};
  let cells='';
  for(let i=0;i<42;i++){const ds=addDays(gs,i),dt=parse(ds),out=dt.getMonth()!==m,we=dt.getDay()%6===0,ev=(byDay[ds]||[]).sort((a,b)=>(a.e?0:1)-(b.e?0:1));
   cells+=`<div class="cday ${out?'out':''} ${we&&!out?'we':''} ${ds===TODAY?'td':''}"><span class="dn">${dt.getDate()}</span>${ev.slice(0,3).map(item).join('')}${ev.length>3?`<button class="cmore" data-act="calday" data-x="${ds}">+${ev.length-3} mais</button>`:''}</div>`}
@@ -1390,7 +1393,7 @@ VIEWS.calendario=()=>{
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 14px">${tg.map(([k,l,c])=>`<button class="tgl ${ct[k]?'on':''}" data-act="ctype" data-x="${k}"><span class="d" style="background:${c}"></span>${l}</button>`).join('')}</div>
  <div class="card cal anim"><div class="calh"><button class="iconb" style="width:32px;height:32px" data-act="calnav" data-x="-1">${ic('cl',16)}</button><h3 class="fd">${MESL[m]} ${y}</h3><button class="iconb" style="width:32px;height:32px" data-act="calnav" data-x="1">${ic('cr',16)}</button><button class="btn gh sm" data-act="calnav" data-x="0">Hoje</button><span class="muted" style="margin-left:auto;font-size:12px">${plural(ml.length,'item','itens')} no mês</span></div>
  <div class="cgrid">${['seg','ter','qua','qui','sex','sáb','dom'].map(w=>`<div class="wd">${w}</div>`).join('')}${cells}</div>
- <div class="clist" style="padding:6px 16px 12px"><div class="mini">${ml.map(x=>x.v?`<div class="it" data-act="ferias" data-x="${x.v.id}"><div style="min-width:0"><div class="tt">🌴 ${esc(M(x.v.user).name)}</div><div class="mm">${fd(x.k)} · ${x.v.aus?'ausência':'férias'} até ${fd(x.v.fim)}</div></div></div>`:x.e?`<div class="it" data-act="event" data-x="${x.e.id}"><div style="min-width:0"><div class="tt">${esc(x.e.title)}</div><div class="mm">${fd(x.k)}${x.e.time?' · '+x.e.time:''} · ${(ETYPES[x.e.type].s||ETYPES[x.e.type].l.slice(0,-1))}</div></div><span class="d" style="width:9px;height:9px;border-radius:50%;background:${ETYPES[x.e.type].c}"></span></div>`:`<div class="it" data-act="open" data-x="${x.d.id}"><div style="min-width:0"><div class="tt">${esc(x.d.title)}</div><div class="mm">${fd(x.k)} · ${first(x.d.owner)}</div></div>${dueChip(x.d)}</div>`).join('')||'<div class="empty">Nada neste mês.</div>'}</div></div></div>`;
+ <div class="clist" style="padding:6px 16px 12px"><div class="mini">${ml.map(x=>x.mt?`<div class="it" data-act="meeting" data-x="${x.mt.id}"><div style="min-width:0"><div class="tt">${esc(x.mt.title)}</div><div class="mm">${fd(x.k)}${x.mt.time?' · '+x.mt.time:''} · reunião</div></div></div>`:x.v?`<div class="it" data-act="ferias" data-x="${x.v.id}"><div style="min-width:0"><div class="tt">🌴 ${esc(M(x.v.user).name)}</div><div class="mm">${fd(x.k)} · ${x.v.aus?'ausência':'férias'} até ${fd(x.v.fim)}</div></div></div>`:x.e?`<div class="it" data-act="event" data-x="${x.e.id}"><div style="min-width:0"><div class="tt">${esc(x.e.title)}</div><div class="mm">${fd(x.k)}${x.e.time?' · '+x.e.time:''} · ${(ETYPES[x.e.type].s||ETYPES[x.e.type].l.slice(0,-1))}</div></div><span class="d" style="width:9px;height:9px;border-radius:50%;background:${ETYPES[x.e.type].c}"></span></div>`:`<div class="it" data-act="open" data-x="${x.d.id}"><div style="min-width:0"><div class="tt">${esc(x.d.title)}</div><div class="mm">${fd(x.k)} · ${first(x.d.owner)}</div></div>${dueChip(x.d)}</div>`).join('')||'<div class="empty">Nada neste mês.</div>'}</div></div></div>`;
 };
 
 /* ---- pautas e relatórios ---- */
@@ -1558,6 +1561,55 @@ VIEWS.configuracoes=()=>{
  <div>${body}</div></div>`;
 };
 
+const _oldReu=VIEWS.reunioes;VIEWS._rel=()=>{S.rtab='rel';const h=_oldReu();const k=h.indexOf('</button></div>',h.indexOf('data-act="pres"'));return h.slice(k+15)};
+/* ---- reuniões: registro de pautas, atas e encaminhamentos ---- */
+const MTYPE={equipe:'Reunião de equipe',chefia:'Reunião com a chefia'};
+const mtSort=(a,b)=>(b.date+(b.time||'')).localeCompare(a.date+(a.time||''));
+function mtStatus(m){return m.status==='realizada'?{l:'Realizada',c:'#1F9D55'}:m.date<TODAY?{l:'Aguardando registro',c:'#E8A317'}:{l:'Agendada',c:'#00549A'}}
+function mtSugg(m){const prev=S.ptype;S.ptype=m.type;const d=pautaData();S.ptype=prev;const have=new Set((m.items||[]).map(i=>norm(i.text)));return d.map(s=>({t:s.t,i:s.i.filter(x=>!have.has(norm(x.t)))})).filter(s=>s.i.length)}
+function mtText(m){const by={};(m.items||[]).forEach(i=>{(by[i.sec||'Outros assuntos']=by[i.sec||'Outros assuntos']||[]).push(i)});
+ return `${m.title} — ASID\n${fdl(m.date)}${m.time?' · '+m.time:''}\nParticipantes: ${(m.people||[]).map(x=>M(x)?M(x).name:x).join(', ')}\n\nPAUTA\n`+Object.entries(by).map(([k,v],n)=>`${n+1}. ${k}\n`+v.map(i=>`   - ${i.text}${i.done?' (discutido)':''}`).join('\n')).join('\n')+
+ (m.notes?`\n\nANOTAÇÕES\n${m.notes}`:'')+((m.decisions||[]).length?`\n\nDECISÕES\n`+m.decisions.map(d=>'- '+d.text).join('\n'):'')+((m.actions||[]).length?`\n\nENCAMINHAMENTOS\n`+m.actions.map(a=>`- ${a.text} — ${M(a.owner)?M(a.owner).name:'sem responsável'}${a.due?' · até '+fdl(a.due):''}${a.did&&D(a.did)?' · '+D(a.did).code:''}`).join('\n'):'')}
+VIEWS.reunioes=()=>{
+ const tab=S.rtab==='rel'?'rel':'reu';
+ const head=`<div class="tbar"><div class="seg"><button class="${tab==='reu'?'on':''}" data-act="rtab" data-x="reu">${ic('note',14)}Reuniões</button><button class="${tab==='rel'?'on':''}" data-act="rtab" data-x="rel">${ic('chart',14)}Relatórios gerenciais</button></div><span style="flex:1"></span><button class="btn gh" data-act="pres">${ic('present',15)}Modo apresentação</button>${tab==='reu'?`<button class="btn acc" data-act="mtNew">${ic('plus',15,2.2)}Nova reunião</button>`:''}</div>`;
+ if(tab==='rel'){S.rtab='rel';const r=VIEWS._rel();return head+r}
+ const L=[...DB.meetings].sort(mtSort),up=L.filter(m=>m.status!=='realizada'&&m.date>=TODAY).sort((a,b)=>a.date.localeCompare(b.date)),past=L.filter(m=>!up.includes(m));
+ const cur=DB.meetings.find(m=>m.id===S.mt)||up[0]||past[0];
+ const card=m=>{const st=mtStatus(m),on=cur&&cur.id===m.id;return `<button data-act="mtOpen" data-x="${m.id}" style="display:block;width:100%;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid ${on?'var(--acc)':'var(--line)'};background:${on?'var(--accs)':'var(--panel)'};margin-bottom:8px">
+  <div style="display:flex;gap:8px;align-items:center"><span class="chip" style="background:${tint(st.c,.12)};color:${st.c}">${st.l}</span><span class="muted" style="font-size:11.5px;margin-left:auto">${fd(m.date)}${m.time?' · '+m.time:''}</span></div>
+  <div style="font-weight:600;margin-top:7px">${esc(m.title)}</div>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11.5px;color:var(--mute)"><span class="avs">${(m.people||[]).slice(0,5).map(p=>av(p,20)).join('')}</span><span style="margin-left:auto">${(m.items||[]).length} itens · ${(m.actions||[]).length} encaminh.</span></div></button>`};
+ const list=`<div><div class="nlbl" style="color:var(--mute);padding:0 2px 8px">Próximas · ${up.length}</div>${up.map(card).join('')||'<div class="muted" style="font-size:12.5px;padding:0 2px 14px">Nenhuma reunião agendada.</div>'}<div class="nlbl" style="color:var(--mute);padding:10px 2px 8px">Anteriores · ${past.length}</div>${past.map(card).join('')||'<div class="muted" style="font-size:12.5px;padding:0 2px">Nenhuma reunião registrada.</div>'}</div>`;
+ if(!cur)return head+`<div class="card cp anim" style="text-align:center;padding:48px 24px"><div style="width:56px;height:56px;border-radius:16px;background:var(--accs);color:var(--acc);display:grid;place-items:center;margin:0 auto">${ic('note',26)}</div><h3 class="fd" style="font-size:18px;margin-top:14px">Registre as reuniões da ASID</h3><div class="muted" style="max-width:520px;margin:6px auto 0">Cada reunião guarda a pauta, as anotações, as decisões e os encaminhamentos. Ao criar, o sistema sugere a pauta com base nas entregas, atrasos, riscos e decisões pendentes.</div><button class="btn acc" style="margin-top:18px" data-act="mtNew">${ic('plus',15,2.2)}Nova reunião</button></div>`;
+ const m=cur,st=mtStatus(m),e=isAdmin()||m.by===S.me||(m.people||[]).includes(S.me),by={};(m.items||[]).forEach(i=>{(by[i.sec||'Outros assuntos']=by[i.sec||'Outros assuntos']||[]).push(i)});
+ const sg=e?mtSugg(m):[];let n=0;
+ const detail=`<div class="card" style="overflow:hidden">
+ <div style="padding:20px 24px;border-bottom:1px solid var(--line)"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip" style="background:${tint(st.c,.12)};color:${st.c}">${st.l}</span><span class="tagc">${MTYPE[m.type]||'Reunião'}</span><span style="flex:1"></span><button class="btn gh sm" data-act="mtCopy">${ic('copy',13)}Copiar</button><button class="btn gh sm" data-act="mtDown">${ic('download',13)}Baixar</button>${e?`<button class="btn gh sm" data-act="mtEdit">${ic('edit',13)}Editar</button>`:''}${isAdmin()||m.by===S.me?`<button class="btn sm dan" data-act="mtDel" title="Excluir">${ic('trash',13)}</button>`:''}</div>
+ <h2 class="fd" style="font-size:22px;font-weight:600;margin-top:10px">${esc(m.title)}</h2>
+ <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--ink2)"><span>${ic('cal',13)} ${DSEM[parse(m.date).getDay()]}, ${fdy(m.date)}${m.time?' · '+m.time:''}</span><span class="avs">${(m.people||[]).map(p=>av(p,24)).join('')}</span><span>${(m.people||[]).map(first).join(', ')}</span></div></div>
+ <div style="padding:20px 24px">
+ <div class="sec" style="margin-top:0"><h4>${ic('note',13)} Pauta <span class="r muted">${(m.items||[]).filter(i=>i.done).length}/${(m.items||[]).length} discutidos</span></h4>
+ ${Object.keys(by).length?Object.entries(by).map(([k,v])=>`<div style="margin-bottom:12px"><div style="display:flex;gap:8px;align-items:center;font-weight:600;margin-bottom:4px"><span class="nb" style="width:20px;height:20px;border-radius:6px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:11px">${++n}</span>${esc(k)}</div>${v.map(i=>`<div class="step" style="padding:6px 0 6px 28px;border:0"><button class="cbx ${i.done?'on':''}" data-act="mtItem" data-x="${i.id}" ${e?'':'disabled'} title="Marcar como discutido">${i.done?ic('check',13,3):''}</button><span class="tt" style="${i.done?'color:var(--mute)':''}">${esc(i.text)}</span>${e?`<button class="muted" data-act="mtItemDel" data-x="${i.id}" title="Tirar da pauta">${ic('x',14)}</button>`:''}</div>`).join('')}</div>`).join(''):'<div class="muted" style="font-size:12.5px;margin-bottom:10px">Pauta vazia. Adicione itens ou use as sugestões automáticas.</div>'}
+ ${e?`<div class="addrow" style="padding:6px 0 0;border:0"><input class="inp" id="mtin" placeholder="Adicionar assunto à pauta…" data-enter="mtItemAdd"><button class="btn gh" data-act="mtItemAdd">${ic('plus',14)}</button></div>`:''}</div>
+ ${sg.length?`<details class="sec" ${S.mtsg?'open':''}><summary data-act="mtSg" style="cursor:pointer;font-size:12px;font-weight:600;color:var(--acc);list-style:none;display:flex;gap:6px;align-items:center">${ic('spark',13)} Sugestões automáticas a partir dos dados · ${sg.reduce((s,x)=>s+x.i.length,0)}</summary><div class="card" style="margin-top:10px;padding:6px 14px">${sg.map(s=>`<div style="padding:8px 0;border-top:1px solid var(--line2)"><div style="font-size:12px;font-weight:700;color:var(--mute);margin-bottom:4px">${esc(s.t)}</div>${s.i.map(x=>`<div style="display:flex;gap:8px;align-items:center;padding:3px 0;font-size:12.5px"><span style="flex:1">${x.h}</span><button class="btn sm gh" data-act="mtAddSg" data-x="${esc(s.t)}|${esc(x.t)}">${ic('plus',12)}Incluir</button></div>`).join('')}</div>`).join('')}</div></details>`:''}
+ <div class="sec"><h4>${ic('msg',13)} Anotações da reunião</h4><textarea class="ta" id="mtnotes" placeholder="O que foi conversado, contexto e observações…" ${e?'':'disabled'} style="min-height:90px">${esc(m.notes||'')}</textarea>${e?`<div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn gh sm" data-act="mtNotes">${ic('check',13)}Salvar anotações</button></div>`:''}</div>
+ <div class="sec"><h4>${ic('gavel',13)} Decisões</h4><div class="card">${(m.decisions||[]).map(d=>`<div class="step"><span style="color:var(--acc)">${ic('gavel',14)}</span><span class="tt">${esc(d.text)}</span>${e?`<button class="muted" data-act="mtDecDel" data-x="${d.id}">${ic('x',14)}</button>`:''}</div>`).join('')||'<div class="empty" style="padding:14px">Nenhuma decisão registrada.</div>'}${e?`<div class="addrow"><input class="inp" id="mtdec" placeholder="Registrar decisão…" data-enter="mtDecAdd"><button class="btn gh" data-act="mtDecAdd">${ic('plus',14)}</button></div>`:''}</div></div>
+ <div class="sec"><h4>${ic('cr',13)} Encaminhamentos</h4><div class="card">${(m.actions||[]).map(a=>{const dm=a.did&&D(a.did);return `<div class="step"><span style="color:${dm?'var(--ok)':'var(--mute)'}">${ic(dm?'check':'flag',14)}</span><div style="flex:1;min-width:0"><div class="tt">${esc(a.text)}</div><div class="mm">${M(a.owner)?first(a.owner):'sem responsável'}${a.due?' · até '+fd(a.due):''}${dm?` · virou <a class="lnk" data-act="open" data-x="${dm.id}">${dm.code}</a> (${STATUS[dm.status].l.toLowerCase()})`:''}</div></div>${e&&!dm?`<button class="btn sm gh" data-act="mtToD" data-x="${a.id}" title="Criar demanda a partir deste encaminhamento">${ic('layers',12)}Virar demanda</button>`:''}${e?`<button class="muted" data-act="mtActDel" data-x="${a.id}">${ic('x',14)}</button>`:''}</div>`}).join('')||'<div class="empty" style="padding:14px">Nenhum encaminhamento.</div>'}
+ ${e?`<div class="addrow" style="flex-wrap:wrap"><input class="inp" id="mtact" placeholder="O que precisa ser feito…" style="flex:2;min-width:200px"><select class="inp" id="mtown" style="flex:1;min-width:130px"><option value="">Responsável</option>${TEAM.map(t=>`<option value="${t.id}">${first(t.id)}</option>`).join('')}</select><input class="inp" type="date" id="mtdue" style="width:150px"><button class="btn gh" data-act="mtActAdd">${ic('plus',14)}</button></div>`:''}</div></div>
+ ${e&&m.status!=='realizada'?`<div style="display:flex;justify-content:flex-end;margin-top:18px"><button class="btn pri" data-act="mtDone">${ic('check',14,2.2)}Marcar reunião como realizada</button></div>`:''}
+ </div></div>`;
+ return head+`<div class="grid anim g-side" style="grid-template-columns:300px minmax(0,1fr);align-items:start;gap:20px">${list}<div>${detail}</div></div>`;
+};
+function meetingModal(id){const m=id&&DB.meetings.find(x=>x.id===id),v=m||{title:'Reunião de equipe',type:'equipe',date:TODAY,time:'09:00',people:TEAM.map(t=>t.id)};
+ return FB(m?'Editar reunião':'Nova reunião','mtform',`<div class="fg"><label class="s6">Tipo<div class="prs">${Object.entries(MTYPE).map(([k,l])=>`<label style="color:var(--ink)"><input type="radio" name="type" value="${k}" ${v.type===k?'checked':''}>${l}</label>`).join('')}</div></label>
+ <label class="s6"><span class="req">Título</span><input class="inp" name="title" value="${esc(v.title)}"></label><label class="s3"><span class="req">Data</span><input class="inp" type="date" name="date" value="${v.date}"></label><label class="s3">Horário<input class="inp" type="time" name="time" value="${v.time||''}"></label>
+ <label class="s6">Participantes${people('people',v.people)}</label>
+ ${m?'':`<label class="s6" style="flex-direction:row;align-items:center;gap:9px;font-weight:500;color:var(--ink)"><input type="checkbox" name="auto" checked style="width:16px;height:16px;accent-color:var(--acc)">Já montar a pauta com as sugestões automáticas (entregas, atrasos, riscos, pedidos de ajuda e decisões pendentes)</label>`}</div>`,`<button type="button" class="btn gh" data-act="mclose">Cancelar</button><button type="submit" class="btn acc">${m?'Salvar':'Criar reunião'}</button>`)}
+const curMt=()=>DB.meetings.find(m=>m.id===S.mt)||[...DB.meetings].filter(m=>m.status!=='realizada'&&m.date>=TODAY).sort((a,b)=>a.date.localeCompare(b.date))[0]||[...DB.meetings].sort(mtSort)[0];
+function mtGuard(m){if(!(isAdmin()||m.by===S.me||(m.people||[]).includes(S.me))){toast('Só participantes e administradores editam esta reunião',true);return false}return true}
+
+
 /* =============== drawer v2 =============== */
 function drawer(){
  const d=S.open&&D(S.open);if(!d)return `<div class="ovl"></div><div class="drawer"></div>`;
@@ -1681,6 +1733,7 @@ const people=(name,sel,type,ex)=>`<div class="pchk">${TEAM.filter(t=>!(ex||[]).i
 function modal(){
  const m=S.modal;if(!m)return'';
  if(m.type==='perfil')return profileModal(m.id);
+ if(m.type==='meeting')return meetingModal(m.id);
  if(m.type==='ferias')return feriasModal(m.id);
  if(m.type==='confirm')return `<div class="modal" data-act="mclose"><div class="mbox sm" data-stop="1"><div class="mh2"><h3>${m.title}</h3></div><div class="mb"><p class="muted">${m.text}</p></div><div class="mf"><button class="btn gh" data-act="mclose">Cancelar</button><button class="btn acc" style="background:var(--late)" data-act="mok">${m.ok}</button></div></div></div>`;
  if(m.type==='export')return MB('Dados',`<textarea class="ta" id="exp" style="min-height:340px;font-family:monospace;font-size:11.5px" readonly>${esc(m.text||JSON.stringify(DB,null,1))}</textarea>`,`<button class="btn acc" data-act="copyexp">${ic('copy',14)}Copiar</button>`);
@@ -1779,6 +1832,7 @@ function saveForm(form){
   if(owner&&owner!==S.me){log(d,'owner',`definiu <b>${M(owner).name}</b> como responsável`);notify([owner],d,`atribuiu a você a nova demanda <b>${code}</b>`,'owner')}
   notify(collabs,d,`incluiu você como colaborador(a) em <b>${code}</b>`,'owner');
   files.forEach(f=>log(d,'file',`anexou <b>${esc(f.name)}</b>`));
+  if(S.modal.fromMt){const mm=DB.meetings.find(x=>x.id===S.modal.fromMt.mt),aa=mm&&mm.actions.find(y=>y.id===S.modal.fromMt.act);if(aa)aa.did=id;log(d,'event',`criou a demanda a partir de um encaminhamento da reunião <b>${esc(mm?mm.title:'')}</b>`)}
   if(S.modal.ideaId){const i=DB.ideas.find(x=>x.id===S.modal.ideaId);if(i){i.did=id;i.stage='em_implementacao';i.hist.push({stage:'em_implementacao',at:now(),by:S.me});notify([i.author],null,`transformou sua ideia “${esc(i.title)}” na demanda <b>${code}</b>`,'idea')}}
   S.modal=null;S.err='';S.open=id;S.dtab=steps.length?'etapas':'resumo';commit(`${code} cadastrada`);
  }
@@ -2038,12 +2092,12 @@ window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
 const SB=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'asid-auth'}}):null;
 const DEMO_KEY='asid-local-v1',DEMO_TEAM=[['achilles.mascarenhas','Achilles Mascarenhas','Assessor','GAPPP','#00549A',true],['marcos.branquinho','Marcos Branquinho','Assessor','SCPMA','#1F9D55',true],['giovanna.cintra','Giovanna Cintra','Assessora de Comunicação','SCPMA','#E8579A',true],['iduardo.gomes','Iduardo Gomes','Analista de Gestão Governamental','GAPPP','#F07A2B',false],['izael.silva','Izael Silva','Analista','GAPPP','#0EA5B7',false],['henrique.tonha','Henrique Tonha','Analista','GAPPP','#B98A00',false],['rhaynneman.macedo','Rhaynneman Macedo','Analista','GAPPP','#7A5C3E',false]].map(a=>({usuario:a[0],nome:a[1],cargo:a[2],area:a[3],cor:a[4],admin:a[5]}));
-const COLS={demanda:'demands',log:'logs',entrada:'intake',ideia:'ideas',conhecimento:'knowledge',evento:'events',notif:'notifs'};
+const COLS={demanda:'demands',log:'logs',entrada:'intake',ideia:'ideas',conhecimento:'knowledge',evento:'events',notif:'notifs',reuniao:'meetings'};
 let SNAP=new Map(),CH=null,syncT=null,syncing=false,pendingRemote=false,dirtyAgain=false;
 function defSettings(){return{staleDays:10,soonDays:5,maxLoad:3,cats:[...CATS0],closeReq:Object.fromEntries(CATS.map(c=>[c,[...BASEREQ,...(CATREQ[c]||[])]]))}}
 function withDefaults(x){const d=defSettings();x=x||{};return{...d,...x,cats:Array.isArray(x.cats)&&x.cats.length?x.cats:d.cats,closeReq:{...d.closeReq,...(x.closeReq||{})}}}
-function syncCats(){const c=(DB&&DB.settings&&Array.isArray(DB.settings.cats)&&DB.settings.cats.length)?DB.settings.cats:CATS0;CATS.splice(0,CATS.length,...c);if(DB&&DB.settings){DB.settings.closeReq=DB.settings.closeReq||{};CATS.forEach(k=>{if(!DB.settings.closeReq[k])DB.settings.closeReq[k]=[...BASEREQ]})}}
-function emptyDB(){return{v:2,demands:[],logs:[],intake:[],ideas:[],knowledge:[],events:[],notifs:[],seq:101,settings:defSettings(),roles:{}}}
+function syncCats(){if(DB&&!DB.meetings)DB.meetings=[];const c=(DB&&DB.settings&&Array.isArray(DB.settings.cats)&&DB.settings.cats.length)?DB.settings.cats:CATS0;CATS.splice(0,CATS.length,...c);if(DB&&DB.settings){DB.settings.closeReq=DB.settings.closeReq||{};CATS.forEach(k=>{if(!DB.settings.closeReq[k])DB.settings.closeReq[k]=[...BASEREQ]})}}
+function emptyDB(){return{v:2,demands:[],logs:[],intake:[],ideas:[],knowledge:[],events:[],notifs:[],meetings:[],seq:101,settings:defSettings(),roles:{}}}
 DB=emptyDB();
 function load(){}
 function setSync(st){S.sync=st;const el=document.getElementById('syncst');if(el)el.outerHTML=syncHtml()}
@@ -2111,8 +2165,7 @@ function vLogin(){
  <label style="font-weight:600;font-size:12.5px;display:flex;flex-direction:column;gap:6px;margin-top:6px">Senha<input class="inp" type="password" id="lpw" autocomplete="current-password" style="height:42px"></label>
  <span class="err" style="min-height:16px">${esc(S.err||'')}</span><button class="btn pri" type="submit" style="height:44px;justify-content:center" ${S.busy?'disabled':''}>${S.busy?'Entrando…':'Entrar'}</button>
  <span class="hint">Primeiro acesso ou esqueceu a senha? Use o <a href="${HUB_URL}" target="_blank" rel="noopener" style="color:var(--acc);font-weight:600">Hub SCPMA</a>.</span></form>
- <div class="muted" style="font-size:11.5px;margin-top:22px;display:flex;gap:6px;align-items:center">${ic('lock',12)}Acesso restrito aos integrantes da Assessoria de Inovação.</div>
- <button class="lnk" data-act="demo" style="margin-top:14px;align-self:flex-start">${ic('spark',13)} Ver em modo local (sem salvar no Hub)</button></div></div>`;
+ <div class="muted" style="font-size:11.5px;margin-top:22px;display:flex;gap:6px;align-items:center">${ic('lock',12)}Acesso restrito aos integrantes da Assessoria de Inovação.</div></div></div>`;
 }
 SUBMIT.lform=async()=>{
  if(S.demo){const pw=document.getElementById('lpw').value;if(pw.trim().toLowerCase()==='inovacao'){S.me=S.loginSel;S.err='';S.boot='ready';const h=location.hash.slice(1);S.view=TITLES[h]&&h!=='membro'?h:'visao-geral';render()}else{S.err='Senha incorreta. No modo local, use inovacao.';render()}return}
@@ -2136,12 +2189,39 @@ Object.assign(ACT,{
   ['demands','logs','intake','ideas','knowledge','events','notifs'].forEach(k=>{DB[k]=[...y[k],...DB[k]]});
   DB.logs.sort((a,b)=>b.at.localeCompare(a.at));DB.notifs.sort((a,b)=>b.at.localeCompare(a.at));bumpSeq();S.modal=null;S.open=null;commit('Dados de exemplo carregados')},
  wipe:()=>{if(!isAdmin())return;S.modal={type:'confirm',title:'Apagar todos os dados da ASID?',text:'Remove definitivamente demandas, histórico, solicitações, ideias, conhecimento, agenda e notificações de todos os integrantes. As regras e permissões continuam.',ok:'Apagar tudo',fn:'doWipe'};render()},
- doWipe:()=>{['demands','logs','intake','ideas','knowledge','events','notifs'].forEach(k=>DB[k]=[]);DB.seq=101;S.modal=null;S.open=null;S.sim=[];commit('Dados apagados')}
+ doWipe:()=>{['demands','logs','intake','ideas','knowledge','events','notifs','meetings'].forEach(k=>DB[k]=[]);DB.seq=101;S.modal=null;S.open=null;S.sim=[];commit('Dados apagados')}
 });
 const _saveFile=saveFile;
 saveFile=async function(name,text){if(DL)return _saveFile(name,text);try{const b=new Blob([text],{type:name.endsWith('.csv')?'text/csv;charset=utf-8':'text/markdown;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast('Arquivo baixado')}catch(e){_saveFile(name,text)}};
 if(SB)SB.auth.onAuthStateChange((ev)=>{if(ev==='SIGNED_OUT'&&S.me&&!S.demo){S.me=null;S.boot='login';render()}});
 window.addEventListener('beforeunload',e=>{if(S.sync==='saving'){e.preventDefault();e.returnValue=''}});
+Object.assign(ACT,{
+ mtNew:()=>{S.modal={type:'meeting'};S.err='';render()},mtEdit:()=>{const m=curMt();if(m){S.modal={type:'meeting',id:m.id};render()}},mtOpen:x=>{S.mt=x;S.mtsg=false;render()},
+ mtSg:()=>{S.mtsg=!S.mtsg;render()},
+ mtItem:x=>{const m=curMt();if(!mtGuard(m))return;const i=m.items.find(y=>y.id===x);i.done=!i.done;commit()},
+ mtItemDel:x=>{const m=curMt();if(!mtGuard(m))return;m.items=m.items.filter(y=>y.id!==x);commit()},
+ mtItemAdd:()=>{const m=curMt(),i=document.getElementById('mtin'),t=(i.value||'').trim();if(!t||!mtGuard(m))return;m.items.push({id:uid(),text:t,sec:'Outros assuntos',done:false});commit();setTimeout(()=>{const n=document.getElementById('mtin');n&&n.focus()},0)},
+ mtAddSg:x=>{const m=curMt();if(!mtGuard(m))return;const k=x.indexOf('|'),sec=x.slice(0,k),t=x.slice(k+1);m.items.push({id:uid(),text:t,sec,done:false});S.mtsg=true;commit()},
+ mtNotes:()=>{const m=curMt();if(!mtGuard(m))return;m.notes=document.getElementById('mtnotes').value;commit('Anotações salvas')},
+ mtDecAdd:()=>{const m=curMt(),i=document.getElementById('mtdec'),t=(i.value||'').trim();if(!t||!mtGuard(m))return;m.decisions.push({id:uid(),text:t});log(null,'event',`registrou uma decisão na reunião <b>${esc(m.title)}</b> (${fd(m.date)})`);commit();setTimeout(()=>{const n=document.getElementById('mtdec');n&&n.focus()},0)},
+ mtDecDel:x=>{const m=curMt();if(!mtGuard(m))return;m.decisions=m.decisions.filter(d=>d.id!==x);commit()},
+ mtActAdd:()=>{const m=curMt();if(!mtGuard(m))return;const t=(document.getElementById('mtact').value||'').trim(),o=document.getElementById('mtown').value,du=document.getElementById('mtdue').value;if(!t)return toast('Descreva o encaminhamento',true);m.actions.push({id:uid(),text:t,owner:o||null,due:du||'',did:null});if(o)notify([o],null,`registrou um encaminhamento para você na reunião “${esc(m.title)}”: ${esc(t)}`,'event');commit('Encaminhamento registrado')},
+ mtActDel:x=>{const m=curMt();if(!mtGuard(m))return;m.actions=m.actions.filter(a=>a.id!==x);commit()},
+ mtToD:x=>{const m=curMt(),a=m.actions.find(y=>y.id===x);S.modal={type:'form',fromMt:{mt:m.id,act:a.id}};render();setTimeout(()=>{const f=document.getElementById('dform');if(!f)return;f.title.value=a.text;f.requester.value=m.title+' · '+fd(m.date);if(a.due)f.due.value=a.due;if(a.owner){const r=f.querySelector(`[name=owner][value="${a.owner}"]`);if(r)r.checked=true}},30)},
+ mtDone:()=>{const m=curMt();if(!mtGuard(m))return;m.status='realizada';const nt=document.getElementById('mtnotes');if(nt)m.notes=nt.value;log(null,'event',`registrou a reunião <b>${esc(m.title)}</b> de ${fd(m.date)} como realizada`);commit('Reunião registrada')},
+ mtDel:()=>{const m=curMt();S.modal={type:'confirm',title:'Excluir reunião?',text:`<b style="color:var(--ink)">${esc(m.title)}</b> de ${fd(m.date)} e todo o seu registro serão removidos.`,ok:'Excluir',fn:'mtDelOk',arg:m.id};render()},
+ mtDelOk:()=>{const id=S.modal.arg;DB.meetings=DB.meetings.filter(m=>m.id!==id);S.modal=null;S.mt=null;commit('Reunião excluída')},
+ mtCopy:()=>{const t=mtText(curMt());navigator.clipboard.writeText(t).then(()=>toast('Pauta e registro copiados'),()=>{S.modal={type:'export',text:t};render()})},
+ mtDown:()=>{const m=curMt();saveFile(`reuniao-asid-${m.date}.md`,mtText(m))},
+ meeting:x=>{S.mt=x;S.rtab='reu';go('reunioes')},
+ mtNewGo:()=>{S.rtab='reu';go('reunioes');S.modal={type:'meeting'};render()}
+});
+SUBMIT.mtform=f=>{const fd2=new FormData(f),g=k=>(fd2.get(k)||'').toString().trim();if(!g('title')||!g('date')){document.getElementById('ferr').textContent='Informe título e data.';return}
+ const v={title:g('title'),type:g('type')||'equipe',date:g('date'),time:g('time'),people:fd2.getAll('people')};
+ if(S.modal.id){Object.assign(DB.meetings.find(m=>m.id===S.modal.id),v);S.modal=null;commit('Reunião atualizada');return}
+ const m={id:uid(),...v,status:'agendada',items:[],notes:'',decisions:[],actions:[],by:S.me,at:now()};
+ if(fd2.get('auto')){const prev=S.ptype;S.ptype=v.type;pautaData().forEach(s=>s.i.forEach(x=>m.items.push({id:uid(),text:x.t,sec:s.t,done:false})));S.ptype=prev}
+ DB.meetings.push(m);S.mt=m.id;log(null,'event',`agendou a reunião <b>${esc(v.title)}</b> para ${fd(v.date)}`);notify(v.people,null,`incluiu você na reunião “${esc(v.title)}” (${fd(v.date)}${v.time?' · '+v.time:''})`,'event');S.modal=null;commit('Reunião criada')};
 function applyUI(){document.documentElement.dataset.theme=S.theme==='dark'?'dark':'light'}
 function saveUI(){try{localStorage.setItem('asid-ui',JSON.stringify({col:!!S.col,theme:S.theme||'light'}))}catch(e){}}
 try{const u=JSON.parse(localStorage.getItem('asid-ui')||'{}');S.col=!!u.col;S.theme=u.theme||'light'}catch(e){S.theme='light'}
