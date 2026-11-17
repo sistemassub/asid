@@ -848,7 +848,7 @@ function chipOK(){return `<span class="chip" style="background:#E6F5EC;color:#1F
 function chipR(lv,short){const x=RISK[lv];return `<span class="chip" style="background:${x.s};color:${x.c}">${ic(lv===2?'alert':lv===1?'clock':'check',11,2.2)}${short?x.l:'Risco '+x.l.toLowerCase()}</span>`}
 const SHOW_FC=false;
 function fcLine(d){if(isClosed(d)||!SHOW_FC)return'';const f=forecast(d);return `<span>${ic('trend',14)}</span><span>Previsão de conclusão: <b style="color:var(--ink)">${fd(f.date)}</b></span><span class="est" title="Calculada pelo ritmo de progresso, etapas restantes, histórico da categoria, dependências e impedimentos">estimativa · confiança ${f.conf}</span>${f.slip>0?`<span style="color:var(--late);font-weight:600">≈ ${plural(f.slip,'dia','dias')} após o prazo</span>`:d.due?'<span style="color:var(--ok);font-weight:600">dentro do prazo</span>':''}`}
-function notify(to,d,text,type){[...new Set(to.filter(t=>t&&t!==S.me))].forEach(t=>DB.notifs.unshift({id:uid(),to:t,at:now(),by:S.me,did:d?d.id:null,text,type:type||'info',read:false}));if(DB.notifs.length>400)DB.notifs.length=400}
+function notify(to,d,text,type,mid){[...new Set(to.filter(t=>t&&t!==S.me))].forEach(t=>DB.notifs.unshift({id:uid(),to:t,at:now(),by:S.me,did:d?d.id:null,mid:mid||null,text,type:type||'info',read:false}));if(DB.notifs.length>400)DB.notifs.length=400}
 const team=d=>[d.owner,...d.collabs].filter(Boolean);
 const admins=()=>TEAM.filter(m=>DB.roles[m.id]).map(m=>m.id);
 function md(t){const L=esc(t).split('\n');let o='',ul=false;L.forEach(l=>{l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');if(/^\s*[-•*]\s+/.test(l)){if(!ul){o+='<ul>';ul=true}o+='<li>'+l.replace(/^\s*[-•*]\s+/,'')+'</li>'}else{if(ul){o+='</ul>';ul=false}if(/^#{1,4}\s/.test(l))o+='<h5>'+l.replace(/^#+\s/,'')+'</h5>';else if(l.trim())o+='<p>'+l+'</p>'}});if(ul)o+='</ul>';return o}
@@ -1628,7 +1628,7 @@ VIEWS.reunioes=()=>{
  </div></div>`;
  return head+`<div class="grid anim g-side" style="grid-template-columns:300px minmax(0,1fr);align-items:start;gap:20px">${list}<div>${detail}</div></div>`;
 };
-function meetingModal(id){const m=id&&DB.meetings.find(x=>x.id===id),v=m||{title:'Reunião de equipe',type:'equipe',date:TODAY,time:'09:00',people:TEAM.map(t=>t.id)};
+function meetingModal(id){const m=id&&DB.meetings.find(x=>x.id===id),v=m||{title:'',type:'equipe',date:TODAY,time:'',people:[S.me]};
  return FB(m?'Editar reunião':'Nova reunião','mtform',`<div class="fg"><label class="s6">Tipo<div class="prs">${Object.entries(MTYPE).map(([k,l])=>`<label style="color:var(--ink)"><input type="radio" name="type" value="${k}" ${v.type===k?'checked':''}>${l}</label>`).join('')}</div></label>
  <label class="s6"><span class="req">Título</span><input class="inp" name="title" value="${esc(v.title)}"></label><label class="s3"><span class="req">Data</span><input class="inp" type="date" name="date" value="${v.date}"></label><label class="s3">Horário<input class="inp" type="time" name="time" value="${v.time||''}"></label>
  <label class="s6">Participantes${people('people',v.people)}</label>
@@ -2019,7 +2019,7 @@ const ACT={
  logout:()=>{S.me=null;S.loginSel=null;S.open=null;S.modal=null;S.asst=false;S.chat=[];try{localStorage.removeItem(SKEY)}catch(e){}render()},
  go:x=>go(x),side:()=>{S.side=!S.side;render()},
  notif:()=>{S.notif=!S.notif;render()},ntab:x=>{S.ntab=x;render()},
- nopen:x=>{const n=DB.notifs.find(y=>y.id===x);if(!n)return;n.read=true;save();if(n.did&&D(n.did)){S.notif=false;S.open=n.did;S.dtab='resumo'}render()},
+ nopen:x=>{const n=DB.notifs.find(y=>y.id===x);if(!n)return;n.read=true;save();if(n.did&&D(n.did)){S.notif=false;S.open=n.did;S.dtab='resumo'}else if(n.mid){S.notif=false;if((DB.meetings||[]).some(m=>m.id===n.mid)){ACT.meeting(n.mid);return}toast('Essa reunião foi excluída')}render()},
  readall:()=>{DB.notifs.forEach(n=>{if(n.to===S.me)n.read=true});save();render()},
  new:()=>{S.notif=false;S.modal={type:'form'};S.err='';render();setTimeout(()=>{const t=document.querySelector('[name=title]');if(t)t.focus()},50)},
  edit:()=>{S.modal={type:'form',id:S.open};S.err='';render()},
@@ -2297,7 +2297,7 @@ Object.assign(ACT,{
  mtToD:x=>{const m=curMt(),a=m.actions.find(y=>y.id===x);S.modal={type:'form',fromMt:{mt:m.id,act:a.id}};render();setTimeout(()=>{const f=document.getElementById('dform');if(!f)return;f.title.value=a.text;f.requester.value=m.title+' · '+fd(m.date);if(a.due)f.due.value=a.due;if(a.owner){const r=f.querySelector(`[name=owner][value="${a.owner}"]`);if(r)r.checked=true}},30)},
  mtDone:()=>{const m=curMt();if(!mtGuard(m))return;m.status='realizada';const nt=document.getElementById('mtnotes');if(nt)m.notes=nt.value;log(null,'event',`registrou a reunião <b>${esc(m.title)}</b> de ${fd(m.date)} como realizada`);commit('Reunião registrada')},
  mtDel:()=>{const m=curMt();S.modal={type:'confirm',title:'Excluir reunião?',text:`<b style="color:var(--ink)">${esc(m.title)}</b> de ${fd(m.date)} e todo o seu registro serão removidos.`,ok:'Excluir',fn:'mtDelOk',arg:m.id};render()},
- mtDelOk:()=>{const id=S.modal.arg;DB.meetings=DB.meetings.filter(m=>m.id!==id);S.modal=null;S.mt=null;commit('Reunião excluída')},
+ mtDelOk:()=>{const id=S.modal.arg,om=DB.meetings.find(m=>m.id===id);DB.meetings=DB.meetings.filter(m=>m.id!==id);DB.notifs=DB.notifs.filter(n=>n.mid!==id);if(om)log(null,'event',`excluiu a reunião <b>${esc(om.title)}</b> de ${fd(om.date)}`);S.modal=null;S.mt=null;commit('Reunião excluída')},
  mtCopy:()=>{const t=mtText(curMt());navigator.clipboard.writeText(t).then(()=>toast('Pauta e registro copiados'),()=>{S.modal={type:'export',text:t};render()})},
  mtDown:()=>{const m=curMt();saveFile(`reuniao-asid-${m.date}.md`,mtText(m))},
  meeting:x=>{S.mt=x;S.rtab='reu';go('reunioes')},
@@ -2305,10 +2305,10 @@ Object.assign(ACT,{
 });
 SUBMIT.mtform=f=>{const fd2=new FormData(f),g=k=>(fd2.get(k)||'').toString().trim();if(!g('title')||!g('date')){document.getElementById('ferr').textContent='Informe título e data.';return}
  const v={title:g('title'),type:g('type')||'equipe',date:g('date'),time:g('time'),people:fd2.getAll('people')};
- if(S.modal.id){Object.assign(DB.meetings.find(m=>m.id===S.modal.id),v);S.modal=null;commit('Reunião atualizada');return}
+ if(S.modal.id){const om=DB.meetings.find(m=>m.id===S.modal.id),nw=v.people.filter(p=>!(om.people||[]).includes(p));Object.assign(om,v);if(nw.length)notify(nw,null,`incluiu você na reunião “${esc(v.title)}” (${fd(v.date)}${v.time?' · '+v.time:''})`,'event',om.id);S.modal=null;commit('Reunião atualizada');return}
  const m={id:uid(),...v,status:'agendada',items:[],notes:'',decisions:[],actions:[],by:S.me,at:now()};
  if(fd2.get('auto')){const prev=S.ptype;S.ptype=v.type;pautaData().forEach(s=>s.i.forEach(x=>m.items.push({id:uid(),text:x.t,sec:s.t,done:false})));S.ptype=prev}
- DB.meetings.push(m);S.mt=m.id;log(null,'event',`agendou a reunião <b>${esc(v.title)}</b> para ${fd(v.date)}`);notify(v.people,null,`incluiu você na reunião “${esc(v.title)}” (${fd(v.date)}${v.time?' · '+v.time:''})`,'event');S.modal=null;commit('Reunião criada')};
+ DB.meetings.push(m);S.mt=m.id;log(null,'event',`agendou a reunião <b>${esc(v.title)}</b> para ${fd(v.date)}`);notify(v.people,null,`incluiu você na reunião “${esc(v.title)}” (${fd(v.date)}${v.time?' · '+v.time:''})`,'event',m.id);S.modal=null;commit('Reunião criada')};
 Object.assign(ACT,{ktab:x=>{S.ktab=x;render()},cpick:x=>{S.cp=S.cp===x?'':x;render()},cmode:x=>{S.cmode=x;render()},cclear:()=>{S.cp='';S.cy='';S.cte='';S.cq='';render()},
  cNew:()=>{S.modal={type:'course'};S.err='';render()},
  cImport:()=>{if(!isAdmin())return;const i=document.createElement('input');i.type='file';i.accept='.xlsx,.xls,.csv';i.onchange=()=>{if(i.files[0])importCourses(i.files[0])};i.click()},
