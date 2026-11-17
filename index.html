@@ -61,7 +61,15 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .iconb:hover{color:var(--ink);border-color:#cfccc3}
 .iconb .dot{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--late);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg)}
 .scroll{flex:1;overflow-y:auto;padding:24px 28px 60px}
-.wrap{max-width:1440px;margin:0 auto}
+.wrap{max-width:none;margin:0}
+@media (min-width:1600px){:root{--z:1.12}}
+@media (min-width:1900px){:root{--z:1.22}}
+@media (min-width:1600px){.shell,.modal,.drawer,.asst,.fab,.pop,.toasts{zoom:var(--z)}
+ .shell,.main{height:calc(100dvh / var(--z))}
+ .drawer{height:calc(100dvh / var(--z));bottom:auto}
+ .modal{width:calc(100vw / var(--z));height:calc(100dvh / var(--z));inset:auto;top:0;left:0}
+ .mbox{max-height:calc(100dvh / var(--z) - 40px)}
+ .asst{height:min(640px,calc(100dvh / var(--z) - 44px))}}
 /* ---------- primitives ---------- */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
 .cp{padding:18px 20px}
