@@ -119,13 +119,22 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px}
 .legend .li .sw{width:10px;height:10px;border-radius:3px}
 .legend .li b{margin-left:auto;font-family:var(--fd);font-weight:600}
-.dist .row{display:grid;grid-template-columns:150px 1fr 70px;gap:12px;align-items:center;padding:7px 0;cursor:pointer}
+.dist .row{display:grid;grid-template-columns:150px 1fr 96px;gap:12px;align-items:center;padding:7px 0;cursor:pointer}
 .dist .row:hover .nm{color:var(--acc)}
 .dist .nm{display:flex;align-items:center;gap:8px;font-weight:500;min-width:0}
 .dist .nm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stk{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--line2);position:relative}
 .stk i{display:block;height:100%;transition:width .5s}
 .stk .lim{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);border-radius:2px}
+.dist .stk i{position:relative;display:block;height:100%;background:color-mix(in srgb,var(--c) 30%,transparent);border-right:2px solid var(--panel);overflow:hidden;cursor:pointer;flex:none}
+.dist .stk i u{position:absolute;inset:0 auto 0 0;background:var(--c);text-decoration:none}
+.dist .stk i em{position:relative;font-style:normal;font-size:10.5px;font-weight:700;color:#fff;padding:0 6px;height:100%;white-space:nowrap;display:flex;align-items:center;gap:3px;text-shadow:0 0 3px rgba(0,0,0,.45)}
+.dist .stk i.cb{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,transparent) 0 5px,color-mix(in srgb,var(--c) 8%,transparent) 5px 10px);box-shadow:inset 0 0 0 1.5px var(--c)}
+.dist .stk i.cb u{opacity:.55}
+.dist .stk i.cb em{color:var(--ink);text-shadow:none}
+.dist .stk i:hover{filter:brightness(1.08)}
+.dist .n{white-space:nowrap}.dist .n div{font-size:10.5px;color:var(--mute)}.dist .n div.on{color:var(--acc);font-weight:600}.dist .n div b{font-size:12px;color:inherit}
+.lgcb{width:14px;height:10px;border-radius:3px;display:inline-block;background:repeating-linear-gradient(135deg,#00549A33 0 3px,transparent 3px 6px);box-shadow:inset 0 0 0 1.5px #00549A}
 .dist .n{font-size:12px;color:var(--ink2);text-align:right}
 .dist .n b{font-family:var(--fd);font-size:14px;color:var(--ink)}
 .hl{display:flex;flex-direction:column}
@@ -427,7 +436,7 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
   .hero{grid-template-columns:1fr;padding:20px}
   .hero h2{font-size:21px}
   .hero .ring{display:flex;align-items:center;gap:14px;text-align:left}
-  .dist .row{grid-template-columns:110px 1fr 50px;gap:8px}
+  .dist .row{grid-template-columns:96px 1fr 74px;gap:8px}
   .lh{display:none}
   .lr{grid-template-columns:1fr auto;grid-template-areas:"t s" "o d" "p p";gap:8px;padding:12px 14px}
   .lr>:nth-child(1){grid-area:t}.lr>:nth-child(2){grid-area:o}.lr>:nth-child(3){display:none}.lr>:nth-child(4){grid-area:d;justify-self:end}.lr>:nth-child(5){grid-area:p}.lr>:nth-child(6){grid-area:s;justify-self:end}
@@ -1127,11 +1136,16 @@ VIEWS['visao-geral']=()=>{
 };
 function hlCard(t,i,c,items,emp){return `<div class="card cp"><div class="ch"><span style="color:${c}">${ic(i,16)}</span><h3>${t}</h3></div><div class="hl">${items.length?items.join(''):`<div class="empty">${emp||'Nada por aqui.'}</div>`}</div></div>`}
 function distBlock(){
- const max=Math.max(DB.settings.maxLoad+1,...TEAM.map(m=>loadOf(m.id))),ss=['a_iniciar','andamento','aguardando','paralisada','revisao'];
- return `<div class="ch"><h3>Distribuição entre os integrantes</h3><span class="hint">demandas ativas sob responsabilidade</span><span class="r hint" style="display:flex;align-items:center;gap:6px"><span style="width:2px;height:12px;background:var(--ink);display:inline-block"></span>limite ${DB.settings.maxLoad}</span></div>
- <div class="dist">${TEAM.map(m=>{const ds=active().filter(d=>d.owner===m.id),n=ds.length,col=active().filter(d=>d.collabs.includes(m.id)).length,lt=ds.filter(late).length;
- return `<div class="row" data-act="member" data-x="${m.id}"><div class="nm">${av(m.id,26)}<span>${first(m.id)}</span>${over(m.id)?`<span class="badge" style="background:#FDEBDD;color:#C2550F">${ic('scale',11,2)}</span>`:''}</div><div class="stk">${ss.map(s=>{const v=ds.filter(d=>d.status===s).length;return v?`<i style="width:${v/max*100}%;background:${STATUS[s].c}" title="${STATUS[s].l}: ${v}"></i>`:''}).join('')}<span class="lim" style="left:${DB.settings.maxLoad/max*100}%"></span></div><div class="n"><b>${n}</b> ${lt?`<span style="color:var(--late);font-weight:600">· ${lt}!</span>`:''}<div style="font-size:10.5px;color:var(--mute)">+${col} colab.</div></div></div>`}).join('')}</div>
- <div style="margin-top:10px">${legendRow(ss.map(s=>[STATUS[s].l,STATUS[s].c]))}</div>`;
+ const ss=['a_iniciar','andamento','aguardando','paralisada','revisao'],so=d=>ss.indexOf(d.status);
+ const own=id=>active().filter(d=>d.owner===id).sort((a,b)=>so(a)-so(b)),cola=id=>active().filter(d=>d.collabs.includes(id)).sort((a,b)=>so(a)-so(b));
+ const max=Math.max(DB.settings.maxLoad+1,...TEAM.map(m=>own(m.id).length+cola(m.id).length));
+ const seg=(d,c)=>{const st=STATUS[d.status],p=prog(d),nc=d.collabs.length,w=100/max;
+  const tip=`${d.code} · ${d.title}\n${c?`Colabora · responsável: ${M(d.owner)?M(d.owner).name:'—'}`:'Responsável'}\n${st.l} · ${p}% concluído${nc?` · ${nc} ${nc>1?'colaboradores':'colaborador'}`:''}`;
+  return `<i class="${c?'cb':''}" style="width:${w}%;--c:${st.c}" title="${esc(tip)}" data-act="open" data-x="${d.id}"><u style="width:${p}%"></u><em>${p}%${!c&&nc?` · ${ic('users',10,2.2)}${nc}`:''}</em></i>`};
+ return `<div class="ch"><h3>Distribuição entre os integrantes</h3><span class="hint">demandas ativas · cheia = responsável · listrada = colaboração</span><span class="r hint" style="display:flex;align-items:center;gap:6px"><span style="width:2px;height:12px;background:var(--ink);display:inline-block"></span>limite ${DB.settings.maxLoad}</span></div>
+ <div class="dist">${TEAM.map(m=>{const ds=own(m.id),cs=cola(m.id),n=ds.length,lt=ds.filter(late).length;
+ return `<div class="row" data-act="member" data-x="${m.id}"><div class="nm">${av(m.id,26)}<span>${first(m.id)}</span>${over(m.id)?`<span class="badge" style="background:#FDEBDD;color:#C2550F">${ic('scale',11,2)}</span>`:''}</div><div class="stk">${ds.map(d=>seg(d,0)).join('')}${cs.map(d=>seg(d,1)).join('')}<span class="lim" style="left:${DB.settings.maxLoad/max*100}%"></span></div><div class="n"><b>${n}</b> resp.${lt?` <span style="color:var(--late);font-weight:600">· ${lt}!</span>`:''}<div class="${cs.length?'on':''}"><b>${cs.length}</b> colab.</div></div></div>`}).join('')}</div>
+ <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center">${legendRow(ss.map(s=>[STATUS[s].l,STATUS[s].c]))}<span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2)"><span class="lgcb"></span>Colaboração</span><span style="font-size:11.5px;color:var(--mute)">· o preenchimento escuro mostra o % concluído; passe o mouse para detalhes</span></div>`;
 }
 /* ---- entrada ---- */
 function intakeSug(i){if(!i.imp||!i.urg)return'';if(i.urg>=5&&i.imp>=4)return'urgente';const s=i.imp*.55+i.urg*.45-(i.eff==='G'?.3:0);return s>=3.9?'alta':s>=2.8?'media':'baixa'}
