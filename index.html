@@ -851,7 +851,8 @@ const team=d=>[d.owner,...d.collabs].filter(Boolean);
 const admins=()=>TEAM.filter(m=>DB.roles[m.id]).map(m=>m.id);
 function md(t){const L=esc(t).split('\n');let o='',ul=false;L.forEach(l=>{l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');if(/^\s*[-•*]\s+/.test(l)){if(!ul){o+='<ul>';ul=true}o+='<li>'+l.replace(/^\s*[-•*]\s+/,'')+'</li>'}else{if(ul){o+='</ul>';ul=false}if(/^#{1,4}\s/.test(l))o+='<h5>'+l.replace(/^#+\s/,'')+'</h5>';else if(l.trim())o+='<p>'+l+'</p>'}});if(ul)o+='</ul>';return o}
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-let SAMPLE=null,DL=null;
+let SAMPLE=null,DL=null,GEM=null;
+const aiOn=()=>!!SAMPLE||(!S.demo&&GEM!==false);
 async function saveFile(name,text){if(DL){try{await DL.save({filename:name,data:text});return}catch(e){if(e&&/declin|cancel/i.test((e.code||'')+(e.message||'')))return}}try{await navigator.clipboard.writeText(text);toast('Download indisponível aqui — conteúdo copiado')}catch(e){S.modal={type:'export',text};render()}}
 
 /* =============== seed v2 =============== */
@@ -1576,7 +1577,7 @@ VIEWS.configuracoes=()=>{
   body=head('Dados e sistema','Onde as informações ficam guardadas e como alguns cálculos funcionam.')+`<div class="grid g2 g-side">
   <div class="card cp"><div class="ch"><span style="color:var(--acc)">${ic('lock',16)}</span><h3>Armazenamento</h3></div><div style="font-size:13px;line-height:1.6;color:var(--ink2)">${S.demo?'<b style="color:var(--ink)">Modo local:</b> os dados ficam salvos apenas neste navegador, sem acesso ao banco do Hub.':'Os dados ficam no <b style="color:var(--ink)">banco do Hub SCPMA</b> e são compartilhados em tempo real entre os integrantes. O acesso usa o mesmo login do Hub.'}</div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn gh" data-act="export">${ic('copy',15)}Ver dados (JSON)</button></div></div>
-  <div class="card cp"><div class="ch"><span style="color:var(--acc)">${ic('shuffle',16)}</span><h3>Como os cálculos funcionam</h3></div><div style="font-size:13px;line-height:1.6;color:var(--ink2)"><b style="color:var(--ink)">Prioridade dinâmica:</b> urgência 30% + impacto 25% + importância institucional 20% + proximidade do prazo 15% + demandas que dependem dela 10%.<br><b style="color:var(--ink)">Assistente:</b> ${SAMPLE?'conectado ao Claude, usa só os dados do sistema':'respostas automáticas a partir dos dados do sistema'}.</div></div>
+  <div class="card cp"><div class="ch"><span style="color:var(--acc)">${ic('shuffle',16)}</span><h3>Como os cálculos funcionam</h3></div><div style="font-size:13px;line-height:1.6;color:var(--ink2)"><b style="color:var(--ink)">Prioridade dinâmica:</b> urgência 30% + impacto 25% + importância institucional 20% + proximidade do prazo 15% + demandas que dependem dela 10%.<br><b style="color:var(--ink)">Assistente:</b> ${SAMPLE?'conectado ao Claude, usa só os dados do sistema':aiOn()?'conectado ao Gemini, usa só os dados do sistema':'respostas automáticas a partir dos dados do sistema'}.</div></div>
   ${a?`<div class="card cp" style="border-color:#F6C9CB;grid-column:1/-1"><div class="ch"><span style="color:var(--late)">${ic('alert',16)}</span><h3>Zona de cuidado</h3></div><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div style="flex:1;min-width:240px;font-size:13px;color:var(--ink2)">Apaga definitivamente demandas, histórico, solicitações, ideias, conhecimento, agenda e notificações de todos. Regras, categorias e permissões continuam.</div><button class="btn gh dan" data-act="wipe">${ic('trash',15)}Apagar todos os dados</button></div></div>`:''}</div>`;
  }
  return `<div class="grid anim g-side" style="grid-template-columns:260px minmax(0,1fr);align-items:start;gap:24px">
@@ -1970,17 +1971,21 @@ function localAnswer(q){
 }
 async function askAI(q){
  if(!q||S.asstBusy)return;S.chat.push({role:'user',text:q});const msg={role:'assistant',text:'',pending:true};S.chat.push(msg);S.asstBusy=true;renderAsst();
- if(SAMPLE){try{const res=await SAMPLE(aiPrompt(q),{cache:false,onText:({text})=>{msg.text=text;msg.pending=false;updLast()}});msg.text=res.text}
+ if(!S.demo&&typeof SB!=='undefined'&&SB&&GEM!==false){try{const {data,error}=await SB.functions.invoke('asid-assistente',{body:{prompt:aiPrompt(q)}});
+   if(error){let b={};try{b=await error.context.json()}catch(_){}const er=new Error(b.error||'falha');er.code=b.error;er.detail=b.detail;throw er}
+   msg.text=data.text;GEM=true}
+  catch(e){if(e&&e.code==='no_key')GEM=false;msg.text=(e&&e.code==='rate_limited'?'Muitas perguntas seguidas para a IA — aguarde um instante. ':e&&e.code==='no_key'?'A IA ainda não foi configurada no servidor. ':'Não consegui consultar a IA agora. ')+'Segue a resposta automática com base nos dados:\n\n'+localAnswer(q);msg.local=true;if(e&&e.detail)console.warn('Gemini:',e.detail)}}
+ else if(SAMPLE){try{const res=await SAMPLE(aiPrompt(q),{cache:false,onText:({text})=>{msg.text=text;msg.pending=false;updLast()}});msg.text=res.text}
   catch(e){if(e&&e.code==='not_granted')SAMPLE=null;msg.text=(e&&e.code==='rate_limited'?'Muitas perguntas seguidas — aguarde um instante. ':'Não consegui consultar a IA agora. ')+'Segue a resposta automática com base nos dados:\n\n'+localAnswer(q);msg.local=true}}
  else{await new Promise(r=>setTimeout(r,350));msg.text=localAnswer(q);msg.local=true}
  msg.pending=false;S.asstBusy=false;renderAsst();
 }
-function msgHtml(m){if(m.role==='user')return `<div class="msg u">${esc(m.text)}</div>`;return `<div class="msg a">${m.pending&&!m.text?'<span class="typing"><i></i><i></i><i></i></span>':md(m.text)}${!m.pending?`<div class="src">${ic(m.local?'zap':'spark',11)}${m.local?'Resposta automática a partir dos dados do sistema':'Gerado pela IA com base nos dados do sistema'}</div>`:''}</div>`}
+function msgHtml(m){if(m.role==='user')return `<div class="msg u">${esc(m.text)}</div>`;return `<div class="msg a">${m.pending&&!m.text?'<span class="typing"><i></i><i></i><i></i></span>':md(m.text)}${!m.pending?`<div class="src">${ic(m.local?'zap':'spark',11)}${m.local?'Resposta automática a partir dos dados do sistema':(SAMPLE?'Gerado pela IA':'Gerado pelo Gemini')+' com base nos dados do sistema'}</div>`:''}</div>`}
 function updLast(){const el=document.getElementById('lastmsg');if(el){el.outerHTML=`<div id="lastmsg">${msgHtml(S.chat[S.chat.length-1])}</div>`;const b=document.getElementById('amsgs');if(b)b.scrollTop=b.scrollHeight}}
 function renderAsst(){
  const root=document.getElementById('asstRoot');if(!root)return;if(!S.me||S.pres!=null){root.innerHTML='';return}
  if(!S.asst){root.innerHTML=`<button class="fab" data-act="asst"><span class="spk">${ic('spark',17,2.2)}</span><span class="lb">Assistente</span></button>`;return}
- root.innerHTML=`<div class="asst"><div class="ah"><span class="fab" style="position:static;box-shadow:none;padding:0;height:auto;background:none"><span class="spk">${ic('spark',17,2.2)}</span></span><div style="flex:1"><b>Assistente ASID</b><small>${SAMPLE?'IA conectada · responde só com dados do sistema':'Respostas automáticas · usa só dados do sistema'}</small></div>${S.chat.length?`<button data-act="aclear" title="Limpar conversa">${ic('trash',16)}</button>`:''}<button data-act="asst" title="Fechar">${ic('x',17)}</button></div>
+ root.innerHTML=`<div class="asst"><div class="ah"><span class="fab" style="position:static;box-shadow:none;padding:0;height:auto;background:none"><span class="spk">${ic('spark',17,2.2)}</span></span><div style="flex:1"><b>Assistente ASID</b><small>${aiOn()?`IA conectada${SAMPLE?'':' (Gemini)'} · responde só com dados do sistema`:'Respostas automáticas · usa só dados do sistema'}</small></div>${S.chat.length?`<button data-act="aclear" title="Limpar conversa">${ic('trash',16)}</button>`:''}<button data-act="asst" title="Fechar">${ic('x',17)}</button></div>
  <div class="am" id="amsgs">${S.chat.length?S.chat.map((m,i)=>i===S.chat.length-1?`<div id="lastmsg">${msgHtml(m)}</div>`:msgHtml(m)).join(''):`<div class="msg a"><p>Olá, ${first(S.me)}! Pergunte sobre demandas, prazos, riscos, carga da equipe ou entregas. Respondo apenas com o que está registrado na plataforma.</p></div><div class="sugg">${QS.map(q=>`<button data-act="aq" data-x="${esc(q)}">${esc(q)}</button>`).join('')}</div>`}</div>
  ${S.chat.length&&!S.asstBusy?`<div class="sugg" style="padding:8px 10px 0;max-height:70px;overflow:auto">${QS.slice(0,4).map(q=>`<button data-act="aq" data-x="${esc(q)}">${esc(q)}</button>`).join('')}</div>`:''}
  <form class="ain" id="aform"><input class="inp" id="ainput" placeholder="Pergunte algo…" ${S.asstBusy?'disabled':''}><button class="btn acc" type="submit" ${S.asstBusy?'disabled':''}>${ic('send',15)}</button></form></div>`;
