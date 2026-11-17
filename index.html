@@ -239,6 +239,10 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .load .lt{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink2);font-weight:600;margin-bottom:6px}
 .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
 .gok{flex:none;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#1F9D55;color:#fff;margin-left:6px}.gbar span svg{vertical-align:-1px}
+.depck{border:1px solid var(--line);border-radius:10px;padding:8px;max-height:190px;overflow:auto;margin-top:4px;background:var(--panel)}
+.dlab{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--ink2)}
+.fg .depck label,.depck label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:6px 6px;border-radius:7px;font-size:12.5px;color:var(--ink);cursor:pointer;font-weight:400}
+.depck label:hover{background:var(--line2)}.depck label .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.depck label .st{font-size:11px;font-weight:600;flex:none}.depck label.hid{display:none}
 .mcont{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink2)}.mcont>span{display:inline-flex;align-items:center;gap:6px;line-height:1}.mcont>span svg{flex:none;color:var(--mute)}.mcont .lnk{line-height:1}
 .mhero{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .mhero h2{font-size:24px;font-weight:600}
@@ -1698,7 +1702,7 @@ VIEWS.conhecimento=()=>{const t=S.ktab==='cursos'?'cursos':'bib';return `<div cl
 function drawer(){
  const d=S.open&&D(S.open);if(!d)return `<div class="ovl"></div><div class="drawer"></div>`;
  const e=canEdit(d),p=prog(d),dn=d.steps.filter(s=>s.done).length,rk=risk(d),ob=openBlocks(d),pd=pendingDeps(d);
- const tabs=[['resumo','Resumo'],['etapas','Etapas',`${dn}/${d.steps.length}`],['diario','Diário de bordo',d.journal.length||''],['bloqueios','Bloqueios',ob.length+pd.length||''],['conversa','Comentários',d.comments.length||''],['arquivos','Anexos',d.files.length||''],['linha','Linha do tempo']];
+ const tabs=[['resumo','Resumo'],['etapas','Etapas',`${dn}/${d.steps.length}`],['diario','Diário de bordo',d.journal.length||''],['bloqueios','Dependências',ob.length+pd.length||''],['conversa','Comentários',d.comments.length||''],['arquivos','Anexos',d.files.length||''],['linha','Linha do tempo']];
  const ownOpts=(v,id)=>`<select class="ownsel" data-chg="stepown" data-x="${id}" ${e?'':'disabled'}><option value="">Sem responsável</option>${TEAM.map(m=>`<option value="${m.id}" ${v===m.id?'selected':''}>${first(m.id)}</option>`).join('')}</select>`;
  let body='';
  if(S.dtab==='resumo'){
@@ -1744,7 +1748,7 @@ function drawer(){
   <div class="mt">${[...d.journal].reverse().map(j=>`<div class="card cp" style="margin-bottom:10px;padding:14px 16px"><div style="display:flex;gap:9px;align-items:center;margin-bottom:10px">${av(j.by,26)}<b style="font-weight:600">${M(j.by).name}</b><span class="muted" style="font-size:12px">${fdy(j.at)}, ${hhmm(j.at)}</span></div><div class="jgrid">${[['Realizado',j.done],['Dificuldades',j.issues],['Pendente',j.pending],['Próximos passos',j.next]].map(([l,v])=>`<div class="jb"><small>${l}</small>${esc(v)||'<span class="muted">—</span>'}</div>`).join('')}</div></div>`).join('')||'<div class="empty">Nenhum registro no diário de bordo ainda.</div>'}</div>`;
  }
  if(S.dtab==='bloqueios'){
-  const opts=DB.demands.filter(x=>x.id!==d.id&&!d.deps.includes(x.id)&&!(x.deps||[]).includes(d.id)).sort((a,b)=>(isDone(a)?1:0)-(isDone(b)?1:0)).map(x=>`<option value="${x.id}">${x.code} · ${esc(x.title.slice(0,50))}</option>`).join('');
+  const opts=DB.demands.filter(x=>x.id!==d.id&&!d.deps.includes(x.id)&&!isCanc(x)&&!dependsOn(x.id,d.id)).sort((a,b)=>(isDone(a)?1:0)-(isDone(b)?1:0)).map(x=>`<option value="${x.id}">${x.code} · ${esc(x.title.slice(0,50))}</option>`).join('');
   body=`<div class="sec" style="margin-top:0"><h4>Impedimentos <span class="r muted">${ob.length} em aberto</span></h4><div class="card">${(d.blocks||[]).slice().sort((a,b)=>(a.resolvedAt?1:0)-(b.resolvedAt?1:0)).map(b=>`<div class="step ${b.resolvedAt?'ok':''}"><span style="color:${b.resolvedAt?'var(--ok)':'var(--late)'}">${ic(b.resolvedAt?'check':'block',16)}</span><div style="flex:1;min-width:0"><div class="tt">${esc(b.reason)}</div><div class="mm">Identificado em ${fd(b.since)} · resolver: ${M(b.resolver)?first(b.resolver):esc(b.resolver)} · impacto estimado de ${plural(+b.impact||0,'dia','dias')} no prazo${b.resolvedAt?` · resolvido ${rel(b.resolvedAt)}`:''}</div></div>${!b.resolvedAt&&e?`<button class="btn sm gh" data-act="blkres" data-x="${b.id}">Resolver</button>`:''}</div>`).join('')||'<div class="empty">Nenhum impedimento registrado.</div>'}</div>
   ${e&&!isClosed(d)?`<div class="card cp mt" style="padding:14px"><b style="font-weight:600">Registrar impedimento</b><div class="fg" style="margin-top:10px"><label class="s6">Motivo<input class="inp" id="bkr" placeholder="O que está impedindo o avanço?"></label><label class="s2">Identificado em<input class="inp" type="date" id="bks" value="${TODAY}"></label><label class="s2">Quem resolve<select class="inp" id="bkw">${TEAM.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}<option value="__ext">Outra área (externa)</option></select></label><label class="s2">Impacto no prazo (dias)<input class="inp" type="number" min="0" value="3" id="bki"></label><label class="s6" id="bkxw">Área externa (se for o caso)<input class="inp" id="bkx" placeholder="Ex.: Gerência de TI"></label></div><div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn acc" data-act="blkadd">${ic('block',14)}Registrar</button></div></div>`:''}</div>
   <div class="sec"><h4>Depende de</h4><div class="card">${d.deps.map(D).filter(Boolean).map(x=>`<div class="step"><span style="color:${isDone(x)?'var(--ok)':'var(--late)'}">${ic(isDone(x)?'check':'link',15)}</span><div style="flex:1;min-width:0;cursor:pointer" data-act="open" data-x="${x.id}"><div class="tt">${x.code} · ${esc(x.title)}</div><div class="mm">${first(x.owner)} · ${isDone(x)?'concluída':STATUS[x.status].l}</div></div>${e?`<button class="muted" data-act="depdel" data-x="${x.id}">${ic('x',14)}</button>`:''}</div>`).join('')||'<div class="empty">Esta demanda não depende de outras.</div>'}${e?`<div class="addrow"><select class="inp" id="depsel">${opts}</select><button class="btn gh" data-act="depadd">${ic('plus',14)}Vincular</button></div>`:''}</div></div>
@@ -1877,6 +1881,7 @@ function modal(){
   <label class="s6">Prioridade<div class="prs">${Object.entries(PRIO).map(([k,x])=>`<label style="color:${x.c}"><input type="radio" name="priority" value="${k}" ${v.priority===k?'checked':''}>${ic(k==='urgente'?'zap':'flag',13,2.2)}${x.l}</label>`).join('')}</div></label>
   <label class="s3">Status atual<select class="inp" name="status">${SORD.map(s=>`<option value="${s}" ${v.status===s?'selected':''}>${STATUS[s].l}</option>`).join('')}</select></label>
   <label class="s3">Percentual de conclusão<select class="inp" name="pmode"><option value="auto" ${v.pmode==='auto'?'selected':''}>Automático pelas etapas</option><option value="manual" ${v.pmode==='manual'?'selected':''}>Manual</option></select></label>
+  <div class="s6 dlab"><span>Depende de <span class="muted" style="font-weight:400">· opcional — demandas que precisam terminar antes desta</span></span>${depPicker(d)}</div>
   ${d&&d.due?`<label class="s6">Motivo, se alterar o prazo<input class="inp" name="reason" placeholder="Fica registrado no histórico de prazos"></label>`:''}
   <div class="ftitle">Complementos</div>
   <label class="s6">Observações e informações complementares<textarea class="ta" name="notes" style="min-height:60px">${esc(v.notes)}</textarea></label>
@@ -1887,11 +1892,15 @@ function chipS2(s){const x=INST[s];return `<span class="chip" style="background:
 function impactFields(im,inClose){return `${inClose?'':'<div class="fg">'}<label class="s6">Tipos de resultado<div class="pchk">${IMPACTS.map(t=>`<label style="padding:5px 11px"><input type="checkbox" name="itypes" value="${t}" ${(im.types||[]).includes(t)?'checked':''}>${t}</label>`).join('')}</div></label><label class="s3">Horas economizadas por mês<input class="inp" type="number" min="0" name="hours" value="${im.hours||0}"></label><label class="s3">Etapas de processo eliminadas<input class="inp" type="number" min="0" name="isteps" value="${im.steps||0}"></label>${inClose?'':`<label class="s6">Descrição do resultado<input class="inp" name="idesc" value="${esc(im.desc||'')}"></label>`}${inClose?'':'</div>'}`}
 function readImpact(fd2,desc){return{types:fd2.getAll('itypes'),hours:+fd2.get('hours')||0,steps:+fd2.get('isteps')||0,desc:desc!==undefined?desc:(fd2.get('idesc')||'').toString().trim()}}
 function reqChecklist(cat){return (DB.settings.closeReq[cat]||[]).map(t=>({id:uid(),text:t,done:false,req:true}))}
+function dependsOn(a,b,seen){seen=seen||new Set();if(seen.has(a))return false;seen.add(a);const x=D(a);return !!x&&(x.deps||[]).some(y=>y===b||dependsOn(y,b,seen))}
+function depPicker(d){const cur=(d&&d.deps)||[],L=DB.demands.filter(x=>(!d||x.id!==d.id)&&(cur.includes(x.id)||!isCanc(x))&&(!d||!dependsOn(x.id,d.id))).sort((a,b)=>(cur.includes(b.id)?1:0)-(cur.includes(a.id)?1:0)||(isClosed(a)?1:0)-(isClosed(b)?1:0)||(a.due||'9').localeCompare(b.due||'9'));
+ if(!L.length)return '<div class="muted" style="font-size:12.5px;margin-top:4px">Ainda não há outras demandas cadastradas.</div>';
+ return `<div class="depck"><input class="inp" placeholder="Buscar por código ou título…" data-in="depq" style="height:34px;margin-bottom:6px">${L.map(x=>`<label data-q="${esc(norm(x.code+' '+x.title))}"><input type="checkbox" name="deps" value="${x.id}" ${cur.includes(x.id)?'checked':''}><span class="code">${x.code}</span><span class="t">${esc(x.title)}</span><span class="st" style="color:${STATUS[x.status].c}">${isDone(x)?'concluída':STATUS[x.status].l}</span></label>`).join('')}</div>`}
 function saveForm(form){
  const fd2=new FormData(form),g=k=>(fd2.get(k)||'').toString().trim(),err=t=>{document.getElementById('ferr').textContent=t};
  const title=g('title'),due=g('due'),start=g('start'),received=g('received');
  if(!title)return err('Informe o título da demanda.');if(!due)return err('Informe o prazo de entrega.');if(start&&due<start)return err('O prazo não pode ser anterior ao início.');
- const owner=g('owner')||null,collabs=fd2.getAll('collabs').filter(c=>c!==owner),status=g('status');
+ const owner=g('owner')||null,collabs=fd2.getAll('collabs').filter(c=>c!==owner),status=g('status'),deps=fd2.getAll('deps');
  const base={title,desc:g('desc'),requester:g('requester'),category:g('category'),goal:g('goal'),owner,collabs,received:received||TODAY,start:start||null,priority:g('priority')||'media',notes:g('notes'),pmode:g('pmode')};
  if(S.modal.id){
   const d=D(S.modal.id);if(!guard(d))return;const ch=[];
@@ -1903,6 +1912,7 @@ function saveForm(form){
   if(d.due!==due){const reason=g('reason')||'Ajuste no cadastro';d.dueChanges.push({from:d.due,to:due,by:S.me,at:now(),reason});log(d,'due',`alterou o prazo — ${esc(reason)}`,[{f:'Prazo',a:fd(d.due),b:fd(due)}]);notify(team({...d,owner,collabs}),d,`alterou o prazo de <b>${d.code}</b> para ${fd(due)}`,'due');d.due=due}
   if(base.pmode==='manual'&&d.pmode!=='manual')d.progress=prog(d);
   if(ch.length)log(d,'edit','editou informações da demanda',ch);
+  {const od=d.deps||[],ad=deps.filter(x=>!od.includes(x)),rm=od.filter(x=>!deps.includes(x));ad.forEach(x=>{log(d,'dep',`vinculou dependência de <b>${D(x).code}</b>`);if(!isClosed(D(x)))notify([D(x).owner],d,`indicou que <b>${d.code}</b> depende da sua demanda ${D(x).code}`,'dep')});rm.forEach(x=>log(d,'dep',`removeu a dependência de <b>${D(x)?D(x).code:'demanda removida'}</b>`));d.deps=deps}
   Object.assign(d,base);
   if(d.status!==status&&status!=='concluida'){const from=d.status;d.status=status;d.concludedAt=null;log(d,'status',`alterou o status para <b>${STATUS[status].l}</b>`,[{f:'Status',a:STATUS[from].l,b:STATUS[status].l}])}
   d.updatedAt=TODAY;S.err='';
@@ -1913,8 +1923,8 @@ function saveForm(form){
   const steps=g('steps').split('\n').map(s=>s.trim()).filter(Boolean).map((t,i)=>({id:uid(),title:t,owner:tm[i%Math.max(1,tm.length)]||null,done:false,doneAt:null}));
   const files=[...(form.querySelector('[name=files]').files||[])].map(f=>({id:uid(),name:f.name,size:f.size,by:S.me,at:now()}));
   const [u,im,ins]=PRIODEF[base.priority];
-  const d={id,code,...base,due,status:status==='concluida'?'revisao':status,progress:0,steps,checklist:[{id:uid(),text:'Escopo validado com o solicitante',done:false,req:false},...reqChecklist(base.category)],files,comments:[],dueChanges:[],createdBy:S.me,createdAt:now(),updatedAt:TODAY,concludedAt:null,deps:[],blocks:[],help:[],journal:[],impact:null,closing:null,decision:'',urg:u,imp:im,inst:ins,ideaId:S.modal.ideaId||null};
-  DB.demands.unshift(d);log(d,'create','cadastrou a demanda');
+  const d={id,code,...base,due,status:status==='concluida'?'revisao':status,progress:0,steps,checklist:[{id:uid(),text:'Escopo validado com o solicitante',done:false,req:false},...reqChecklist(base.category)],files,comments:[],dueChanges:[],createdBy:S.me,createdAt:now(),updatedAt:TODAY,concludedAt:null,deps,blocks:[],help:[],journal:[],impact:null,closing:null,decision:'',urg:u,imp:im,inst:ins,ideaId:S.modal.ideaId||null};
+  DB.demands.unshift(d);log(d,'create','cadastrou a demanda');deps.forEach(x=>{log(d,'dep',`vinculou dependência de <b>${D(x).code}</b>`);if(!isClosed(D(x)))notify([D(x).owner],d,`indicou que <b>${code}</b> depende da sua demanda ${D(x).code}`,'dep')});
   if(owner&&owner!==S.me){log(d,'owner',`definiu <b>${M(owner).name}</b> como responsável`);notify([owner],d,`atribuiu a você a nova demanda <b>${code}</b>`,'owner')}
   notify(collabs,d,`incluiu você como colaborador(a) em <b>${code}</b>`,'owner');
   files.forEach(f=>log(d,'file',`anexou <b>${esc(f.name)}</b>`));
@@ -2324,7 +2334,7 @@ SUBMIT.cform2=f=>{const fd2=new FormData(f),g=k=>(fd2.get(k)||'').toString().tri
  const u=g('user')||S.me,c={user:u,curso:g('curso'),turma:'',mod:g('mod'),ini:g('ini'),fim:g('fim')||g('ini'),ch:+g('ch')||0,conc:fd2.get('conc')?'Sim':'Não',insc:'',inst:g('inst')||'—',src:'manual',by:S.me,at:now()};c.id=hashId(u+'|'+norm(c.curso)+'|'+c.ini);
  DB.courses=DB.courses||[];if(!DB.courses.some(x=>x.id===c.id))DB.courses.push(c);log(null,'know',`registrou o curso <b>${esc(c.curso)}</b> de ${M(u).name}`);S.modal=null;commit('Curso registrado')};
 document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.chg;if(k==='cp'||k==='cy'||k==='cte'){S[k]=e.target.value;render()}});
-document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.in==='csearch'){S.cq=e.target.value;render()}});
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.in==='csearch'){S.cq=e.target.value;render()}if(e.target.dataset&&e.target.dataset.in==='depq'){const q=norm(e.target.value);e.target.parentNode.querySelectorAll('label[data-q]').forEach(l=>l.classList.toggle('hid',!!q&&!l.dataset.q.includes(q)))}});
 function applyUI(){document.documentElement.dataset.theme=S.theme==='dark'?'dark':'light'}
 function saveUI(){try{localStorage.setItem('asid-ui',JSON.stringify({col:!!S.col,theme:S.theme||'light'}))}catch(e){}}
 try{const u=JSON.parse(localStorage.getItem('asid-ui')||'{}');S.col=!!u.col;S.theme=u.theme||'light'}catch(e){S.theme='light'}
