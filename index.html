@@ -243,6 +243,11 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .dlab{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--ink2)}
 .fg .depck label,.depck label{display:flex;flex-direction:row;align-items:center;gap:8px;padding:6px 6px;border-radius:7px;font-size:12.5px;color:var(--ink);cursor:pointer;font-weight:400}
 .depck label:hover{background:var(--line2)}.depck label .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.depck label .st{font-size:11px;font-weight:600;flex:none}.depck label.hid{display:none}
+.recc{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;border:1px dashed color-mix(in srgb,var(--acc) 45%,transparent);background:var(--accs);margin-bottom:18px}
+.recc .ri{width:36px;height:36px;border-radius:10px;background:var(--acc);color:#fff;display:grid;place-items:center;flex:none}
+.recc.on{border-style:solid}.recc b{font-weight:600}
+.recdots{display:flex;gap:5px;margin-top:9px}.recdots i{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:rdot 1.2s infinite ease-in-out}.recdots i:nth-child(2){animation-delay:.15s}.recdots i:nth-child(3){animation-delay:.3s}
+@keyframes rdot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 .mcont{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;margin-top:8px;font-size:12.5px;color:var(--ink2)}.mcont>span{display:inline-flex;align-items:center;gap:6px;line-height:1}.mcont>span svg{flex:none;color:var(--mute)}.mcont .lnk{line-height:1}
 .mhero{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .mhero h2{font-size:24px;font-weight:600}
@@ -1625,6 +1630,7 @@ VIEWS.reunioes=()=>{
  <h2 class="fd" style="font-size:22px;font-weight:600;margin-top:10px">${esc(m.title)}</h2>
  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--ink2)"><span>${ic('cal',13)} ${DSEM[parse(m.date).getDay()]}, ${fdy(m.date)}${m.time?' · '+m.time:''}</span><span class="avs">${(m.people||[]).map(p=>av(p,24)).join('')}</span><span>${(m.people||[]).map(first).join(', ')}</span></div></div>
  <div style="padding:20px 24px">
+ ${e?recCard(m):(m.rec?recCard(m):'')}
  <div class="sec" style="margin-top:0"><h4>${ic('note',13)} Pauta <span class="r muted">${(m.items||[]).filter(i=>i.done).length}/${(m.items||[]).length} discutidos</span></h4>
  ${Object.keys(by).length?Object.entries(by).map(([k,v])=>`<div style="margin-bottom:12px"><div style="display:flex;gap:8px;align-items:center;font-weight:600;margin-bottom:4px"><span class="nb" style="width:20px;height:20px;border-radius:6px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-size:11px">${++n}</span>${esc(k)}</div>${v.map(i=>`<div class="step" style="padding:6px 0 6px 28px;border:0"><button class="cbx ${i.done?'on':''}" data-act="mtItem" data-x="${i.id}" ${e?'':'disabled'} title="Marcar como discutido">${i.done?ic('check',13,3):''}</button><span class="tt" style="${i.done?'color:var(--mute)':''}">${esc(i.text)}</span>${e?`<button class="muted" data-act="mtItemDel" data-x="${i.id}" title="Tirar da pauta">${ic('x',14)}</button>`:''}</div>`).join('')}</div>`).join(''):'<div class="muted" style="font-size:12.5px;margin-bottom:10px">Pauta vazia. Adicione itens ou use as sugestões automáticas.</div>'}
  ${e?`<div class="addrow" style="padding:6px 0 0;border:0"><input class="inp" id="mtin" placeholder="Adicionar assunto à pauta…" data-enter="mtItemAdd"><button class="btn gh" data-act="mtItemAdd">${ic('plus',14)}</button></div>`:''}</div>
@@ -1637,6 +1643,80 @@ VIEWS.reunioes=()=>{
  </div></div>`;
  return head+`<div class="grid anim g-side" style="grid-template-columns:300px minmax(0,1fr);align-items:start;gap:20px">${list}<div>${detail}</div></div>`;
 };
+
+/* ---- registro automático a partir da gravação ---- */
+const REC_CHUNK=8*1024*1024;
+function recCard(m){const r=S.mtrec&&S.mtrec.mid===m.id?S.mtrec:null,e=isAdmin()||m.by===S.me||(m.people||[]).includes(S.me);
+ if(r&&!r.err)return `<div class="recc on" id="recc"><div class="ri">${ic('spark',18)}</div><div style="flex:1;min-width:0"><b>${esc(r.phase)}</b><div class="muted" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.name)} · ${fsz(r.size)}</div>${r.pct!=null?`<div class="bar" style="height:6px;margin-top:8px"><i style="width:${r.pct}%;background:var(--acc)"></i></div>`:'<div class="recdots"><i></i><i></i><i></i></div>'}<div class="muted" style="font-size:11.5px;margin-top:6px">Pode continuar usando a ASID nesta aba — não feche nem recarregue a página até terminar.</div></div></div>`;
+ const done=m.rec?`<div class="muted" style="font-size:12px;margin-top:3px">Registro gerado em ${fd(m.rec.at.slice(0,10))} por ${first(m.rec.by)} a partir ${m.rec.src==='transcricao'?'da transcrição':'da gravação'} <b>${esc(m.rec.name)}</b>. Revise e ajuste o que precisar.</div>`:'';
+ return `<div class="recc"><div class="ri">${ic('spark',18)}</div><div style="flex:1;min-width:0"><b>${m.rec?'Registro automático':'Gerar o registro a partir da gravação'}</b>${done||`<div class="muted" style="font-size:12px;margin-top:3px">Envie o vídeo ou áudio da reunião (ou a transcrição do Teams em .vtt/.txt). O Gemini preenche anotações, pauta discutida, decisões e encaminhamentos com responsáveis e prazos.</div>`}${r&&r.err?`<div style="color:var(--late);font-size:12px;margin-top:6px">${esc(r.err)}</div>`:''}</div>${e?`<button class="btn ${m.rec?'gh':'acc'} sm" data-act="mtRec">${ic('upload',13)}${m.rec?'Enviar outra':'Enviar gravação'}</button>`:''}</div>`}
+function fsz(b){return b>=1073741824?(b/1073741824).toFixed(1).replace('.',',')+' GB':b>=1048576?Math.round(b/1048576)+' MB':Math.max(1,Math.round(b/1024))+' KB'}
+async function recApi(op,body,raw){const {data:{session}}=await SB.auth.getSession();if(!session)throw Object.assign(new Error('Sessão expirada — entre novamente.'),{code:'auth'});
+ const r=await fetch(`${SB_URL}/functions/v1/asid-reuniao?${op}`,{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:SB_KEY,...(raw?{'Content-Type':'application/octet-stream'}:{'Content-Type':'application/json'})},body:raw?body:JSON.stringify(body||{})});
+ const j=await r.json().catch(()=>({}));if(!r.ok){const er=new Error(j.error||('HTTP '+r.status));er.code=j.error;er.detail=j.detail;er.status=r.status;throw er}return j}
+function recPrompt(m){const team=TEAM.map(t=>`${t.id} = ${t.name}`).join('\n'),items=(m.items||[]).map(i=>`${i.id} | ${i.sec||'Outros assuntos'} | ${i.text}`).join('\n')||'(pauta vazia)';
+ return `Você é o secretário da Assessoria de Inovação (ASID) e vai produzir o registro oficial desta reunião a partir da gravação/transcrição acima. Escreva em português do Brasil, de forma objetiva e profissional.
+
+Reunião: ${m.title} (${MTYPE[m.type]||'Reunião'})
+Data: ${m.date}${m.time?' às '+m.time:''}
+Participantes previstos: ${(m.people||[]).map(p=>M(p)?M(p).name:p).join(', ')||'—'}
+
+Equipe da ASID (id = nome):
+${team}
+
+Itens já na pauta (id | seção | texto):
+${items}
+
+Regras:
+- Use somente o que foi efetivamente dito. Não invente fatos, nomes, números ou prazos.
+- "resumo": as anotações da reunião em tópicos curtos (um por linha, começando com "• "), cobrindo contexto, pontos discutidos e informações relevantes.
+- "pauta_discutida": ids dos itens da pauta acima que foram discutidos.
+- "novos_assuntos": assuntos discutidos que não estavam na pauta, com uma seção curta (ex.: "Projetos", "Informes", "Outros assuntos").
+- "decisoes": decisões tomadas, uma frase cada.
+- "encaminhamentos": tarefas combinadas. "responsavel" deve ser um id da equipe acima quando a pessoa for identificável; senão "". "prazo" em AAAA-MM-DD quando um prazo for mencionado (converta expressões como "sexta que vem" a partir da data da reunião); senão "".
+- "participantes_identificados": ids da equipe que falaram ou foram citados como presentes.
+
+Responda APENAS com JSON neste formato:
+{"resumo":"","pauta_discutida":[],"novos_assuntos":[{"secao":"","texto":""}],"decisoes":[""],"encaminhamentos":[{"texto":"","responsavel":"","prazo":""}],"participantes_identificados":[]}`}
+async function recRun(m,f){
+ const isTxt=/\.(vtt|srt|txt)$/i.test(f.name)||/^text\//.test(f.type),isDocx=/\.docx$/i.test(f.name),isMedia=/^(video|audio)\//.test(f.type)||/\.(mp4|m4a|mp3|wav|webm|mov|mkv|ogg|aac|wma|avi)$/i.test(f.name);
+ const st=x=>{S.mtrec=Object.assign(S.mtrec||{},x);const el=document.getElementById('recc');if(el){const t=document.createElement('div');t.innerHTML=recCard(DB.meetings.find(y=>y.id===m.id)||m);el.replaceWith(t.firstElementChild)}};
+ S.mtrec={mid:m.id,name:f.name,size:f.size,phase:'Preparando…',pct:null,err:''};render();
+ let fileName=null;
+ try{
+  if(S.demo||typeof SB==='undefined'||!SB)throw new Error('Disponível apenas com login do Hub (fora do modo local).');
+  if(isDocx)throw new Error('Arquivo .docx não é aceito. No Teams, baixe a transcrição em .vtt, ou envie o vídeo/áudio da gravação.');
+  if(!isTxt&&!isMedia)throw new Error('Formato não reconhecido. Envie vídeo (mp4, webm, mov), áudio (m4a, mp3, wav) ou transcrição (.vtt, .txt).');
+  let payload;
+  if(isTxt){st({phase:'Lendo a transcrição…'});let t=await f.text();t=t.replace(/^WEBVTT.*$/m,'').replace(/^\d+\s*$/gm,'').replace(/^[\d:.,]+\s+-->\s+[\d:.,]+.*$/gm,'').replace(/<v ([^>]+)>/g,'$1: ').replace(/<\/?[^>]+>/g,'').replace(/\n{2,}/g,'\n').trim();if(t.length<40)throw new Error('A transcrição está vazia.');if(t.length>1400000)t=t.slice(0,1400000);payload={transcript:t}}
+  else{
+   const mime=f.type||(/\.mp3$/i.test(f.name)?'audio/mpeg':/\.m4a$/i.test(f.name)?'audio/mp4':/\.wav$/i.test(f.name)?'audio/wav':'video/mp4');
+   const {url}=await recApi('op=start',{mime,size:f.size,name:f.name});
+   let off=0,fin=null;
+   while(off<f.size){const end=Math.min(f.size,off+REC_CHUNK),last=end>=f.size;st({phase:`Enviando a gravação… ${Math.round(off/f.size*100)}%`,pct:Math.round(off/f.size*100)});
+    let tries=0,res;for(;;){try{res=await recApi(`op=chunk&url=${encodeURIComponent(url)}&offset=${off}&final=${last?1:0}`,f.slice(off,end),true);break}catch(e){if(++tries>=3)throw e;await new Promise(r=>setTimeout(r,1500*tries))}}
+    if(last)fin=res.file;off=end}
+   if(!fin||!fin.name)throw new Error('O envio não foi concluído.');fileName=fin.name;
+   st({phase:'O Gemini está processando o vídeo…',pct:null});
+   let state=fin.state,t0=Date.now();while(state==='PROCESSING'){if(Date.now()-t0>15*60*1000)throw new Error('O processamento da gravação demorou demais.');await new Promise(r=>setTimeout(r,5000));state=(await recApi('op=status',{name:fileName})).state}
+   if(state!=='ACTIVE')throw new Error('O Gemini não conseguiu ler esse arquivo.');
+   payload={fileUri:fin.uri,mime:fin.mimeType||mime}}
+  st({phase:'Gerando o registro da reunião…',pct:null});
+  const {text}=await recApi('op=analyze',{...payload,prompt:recPrompt(m)});
+  let o;try{o=JSON.parse(text.replace(/^```(json)?|```$/g,'').trim())}catch(_){throw new Error('A resposta da IA veio num formato inesperado. Tente de novo.')}
+  recApply(m,o,f,isTxt?'transcricao':'gravacao');S.mtrec=null;commit('Registro da reunião gerado — revise e ajuste se precisar');
+ }catch(e){console.warn('Gravação:',e,e&&e.detail);const msg=e.code==='no_key'?'A chave do Gemini não está configurada no servidor.':e.code==='rate_limited'?'Limite de uso do Gemini atingido. Tente novamente em alguns minutos.':e.status===546||e.status===504||e.code==='internal'?'A análise demorou mais que o limite do servidor. Para reuniões longas, envie só o áudio ou a transcrição do Teams (.vtt).':e.message&&!/^HTTP|^gemini$|Failed to fetch/.test(e.message)?e.message:'Não foi possível gerar o registro agora. Tente novamente.';S.mtrec={mid:m.id,name:f.name,size:f.size,err:msg};render()}
+ finally{if(fileName)recApi('op=delete',{name:fileName}).catch(()=>{})}
+}
+function recApply(m0,o,f,src){const m=DB.meetings.find(x=>x.id===m0.id)||m0;const arr=x=>Array.isArray(x)?x:[];m.items=m.items||[];m.decisions=m.decisions||[];m.actions=m.actions||[];
+ const res=String(o.resumo||'').trim();if(res)m.notes=(m.notes&&m.notes.trim()?m.notes.trim()+'\n\n':'')+'— Registro gerado a partir '+(src==='transcricao'?'da transcrição':'da gravação')+' —\n'+res;
+ arr(o.pauta_discutida).forEach(id=>{const it=m.items.find(i=>i.id===id);if(it)it.done=true});
+ const have=new Set(m.items.map(i=>norm(i.text)));arr(o.novos_assuntos).forEach(x=>{const t=String(x&&x.texto||'').trim();if(t&&!have.has(norm(t))){m.items.push({id:uid(),text:t,sec:String(x.secao||'Outros assuntos').trim()||'Outros assuntos',done:true});have.add(norm(t))}});
+ const hd=new Set(m.decisions.map(d=>norm(d.text)));arr(o.decisoes).forEach(x=>{const t=String(x||'').trim();if(t&&!hd.has(norm(t))){m.decisions.push({id:uid(),text:t});hd.add(norm(t))}});
+ const ha=new Set(m.actions.map(a=>norm(a.text)));arr(o.encaminhamentos).forEach(x=>{const t=String(x&&x.texto||'').trim();if(!t||ha.has(norm(t)))return;ha.add(norm(t));const ow=M(x.responsavel)?x.responsavel:null,du=/^\d{4}-\d{2}-\d{2}$/.test(x.prazo||'')?x.prazo:'';m.actions.push({id:uid(),text:t,owner:ow,due:du,did:null,ai:true});if(ow)notify([ow],null,`registrou um encaminhamento para você na reunião “${esc(m.title)}”: ${esc(t)}`,'event',m.id)});
+ const pi=arr(o.participantes_identificados).filter(p=>M(p)&&!(m.people||[]).includes(p));if(pi.length)m.people=[...(m.people||[]),...pi];
+ m.rec={name:f.name,size:f.size,src,at:now(),by:S.me};if(m.status!=='realizada'&&m.date<=TODAY)m.status='realizada';
+ log(null,'event',`gerou o registro da reunião <b>${esc(m.title)}</b> (${fd(m.date)}) a partir ${src==='transcricao'?'da transcrição':'da gravação'}`)}
 function meetingModal(id){const m=id&&DB.meetings.find(x=>x.id===id),v=m||{title:'',type:'equipe',date:TODAY,time:'',people:[S.me]};
  return FB(m?'Editar reunião':'Nova reunião','mtform',`<div class="fg"><label class="s6">Tipo<div class="prs">${Object.entries(MTYPE).map(([k,l])=>`<label style="color:var(--ink)"><input type="radio" name="type" value="${k}" ${v.type===k?'checked':''}>${l}</label>`).join('')}</div></label>
  <label class="s6"><span class="req">Título</span><input class="inp" name="title" value="${esc(v.title)}"></label><label class="s3"><span class="req">Data</span><input class="inp" type="date" name="date" value="${v.date}"></label><label class="s3">Horário<input class="inp" type="time" name="time" value="${v.time||''}"></label>
@@ -2304,6 +2384,7 @@ Object.assign(ACT,{
  mtItemDel:x=>{const m=curMt();if(!mtGuard(m))return;m.items=m.items.filter(y=>y.id!==x);commit()},
  mtItemAdd:()=>{const m=curMt(),i=document.getElementById('mtin'),t=(i.value||'').trim();if(!t||!mtGuard(m))return;m.items.push({id:uid(),text:t,sec:'Outros assuntos',done:false});commit();setTimeout(()=>{const n=document.getElementById('mtin');n&&n.focus()},0)},
  mtAddSg:x=>{const m=curMt();if(!mtGuard(m))return;const k=x.indexOf('|'),sec=x.slice(0,k),t=x.slice(k+1);m.items.push({id:uid(),text:t,sec,done:false});S.mtsg=true;commit()},
+ mtRec:()=>{const m=curMt();if(!mtGuard(m))return;if(S.mtrec&&!S.mtrec.err&&S.mtrec.mid)return toast('Já existe um envio em andamento',true);const i=document.createElement('input');i.type='file';i.accept='video/*,audio/*,.vtt,.srt,.txt,.mp4,.m4a,.mp3,.wav,.webm,.mov';i.onchange=()=>{const f=i.files&&i.files[0];if(f)recRun(m,f)};i.click()},
  mtNotes:()=>{const m=curMt();if(!mtGuard(m))return;m.notes=document.getElementById('mtnotes').value;commit('Anotações salvas')},
  mtDecAdd:()=>{const m=curMt(),i=document.getElementById('mtdec'),t=(i.value||'').trim();if(!t||!mtGuard(m))return;m.decisions.push({id:uid(),text:t});log(null,'event',`registrou uma decisão na reunião <b>${esc(m.title)}</b> (${fd(m.date)})`);commit();setTimeout(()=>{const n=document.getElementById('mtdec');n&&n.focus()},0)},
  mtDecDel:x=>{const m=curMt();if(!mtGuard(m))return;m.decisions=m.decisions.filter(d=>d.id!==x);commit()},
