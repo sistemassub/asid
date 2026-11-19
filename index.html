@@ -729,6 +729,12 @@ body{background:radial-gradient(1200px 600px at 85% -10%,rgba(0,84,154,.06),tran
 [data-theme=dark] .side{background:linear-gradient(180deg,#121318 0%,var(--side) 100%);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
 .brand small{white-space:nowrap;font-size:9.5px;letter-spacing:.06em}
 .side{padding-bottom:8px}.shell.col .side{padding-bottom:8px}.me{margin-top:auto!important;margin-bottom:0;padding:9px 10px}.me .t span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.tgl{height:32px;padding:0 13px 0 11px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--mute);font-weight:600;font-size:12.5px;transition:.15s}
+.tgl .d{width:9px;height:9px;opacity:.35;box-shadow:0 0 0 3px transparent;transition:.15s}
+.tgl:hover{background:rgba(20,22,35,.04);color:var(--ink2)}
+.tgl.on{background:var(--panel);color:var(--ink);border-color:transparent;box-shadow:var(--sh)}
+.tgl.on .d{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
+[data-theme=dark] .tgl:hover{background:rgba(255,255,255,.05)}
 .kcard .code{white-space:nowrap}.kcard .chip{height:20px;padding:0 7px;font-size:11px}
 @media (max-width:1024px){.side{margin:0;border-radius:0 24px 24px 0}}
 </style>
@@ -2340,7 +2346,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-19.3';
+const APP_V='2026-11-19.4';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
