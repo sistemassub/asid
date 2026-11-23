@@ -119,7 +119,7 @@ h1,h2,h3,.fd{font-family:var(--fd);letter-spacing:-.01em}
 .legend .li{display:flex;align-items:center;gap:9px;font-size:12.5px}
 .legend .li .sw{width:10px;height:10px;border-radius:3px}
 .legend .li b{margin-left:auto;font-family:var(--fd);font-weight:600}
-.dist .row{display:grid;grid-template-columns:150px 1fr 96px;gap:12px;align-items:center;padding:7px 0;cursor:pointer}
+.dist .row{display:grid;grid-template-columns:150px 1fr 108px;gap:12px;align-items:center;padding:7px 0;cursor:pointer}
 .dist .row:hover .nm{color:var(--acc)}
 .dist .nm{display:flex;align-items:center;gap:8px;font-weight:500;min-width:0}
 .dist .nm span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2411,7 +2411,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-23.3';
+const APP_V='2026-11-23.4';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
@@ -2777,6 +2777,12 @@ ACT.pjGoItem=x=>{const [pid,iid]=String(x).split('|');if(!PJ(pid))return toast('
  const card=(DB.projects||[]).length?`<div class="card cp mt"><div class="ch"><span style="color:#7C5CD6">${ic('folder',16)}</span><h3>Itens de projeto que precisam de atenção</h3><span class="hint r">${L.length} de ${pjActive().filter(x=>x.cur).length} itens em execução</span></div>
  ${L.length?`<div>${L.map(x=>{const n=x.n,dl=n.fim?diff(n.fim,TODAY):null;return `<div class="pjli" style="align-items:center" data-act="pjGoItem" data-x="${x.P.id}|${n.it.id}"><span class="dot" style="background:${x.late?'var(--lates)':x.risk?'var(--warns)':'var(--accs)'};color:${x.late?'var(--late)':x.risk?'#B07A00':'var(--acc)'}">${ic(x.late?'alert':x.risk?'trend':'clock',15)}</span><div style="min-width:0;flex:1"><div class="t"><span class="code">${esc(n.it.code)}</span> ${esc(n.it.name)}</div><div class="s">${esc(x.P.name)} · ${M(n.it.own)?first(n.it.own):'sem responsável'} · ${pjPr(n)}% · ${x.late?`venceu em ${fd(n.fim)}`:x.risk?`ritmo abaixo do esperado, prazo ${fd(n.fim)}`:dl===0?'vence hoje':`vence em ${plural(dl,'dia','dias')}`}</div></div>${pjAv(n.it.own,24)}${pjChip(n)}</div>`}).join('')}</div>`:'<div class="empty" style="font-size:12.5px">Nenhum item de projeto atrasado, em risco ou vencendo agora.</div>'}</div>`:'';
  return _rad()+card}}
+
+{const _vg=VIEWS['visao-geral'];VIEWS['visao-geral']=()=>{const Ps=DB.projects||[];if(!Ps.length)return _vg();
+ const card=`<div class="card cp mt anim"><div class="ch"><span style="color:#7C5CD6">${ic('folder',16)}</span><h3>Projetos</h3><span class="hint r">${Ps.length} projeto${Ps.length>1?'s':''}</span></div><div class="grid g3">${Ps.map(P=>{const s=pjSummary(P),act=pjActive().filter(x=>x.P.id===P.id),cur=act.filter(x=>x.cur).length,lt=act.filter(x=>x.late).length,lf=s.L.map(n=>n.it),noown=lf.filter(i=>!i.own&&!(i.did&&D(i.did))).length,nod=lf.filter(i=>!i.fim&&!i.ini).length;
+  return `<div class="pjli" style="margin:0;border:1px solid var(--line2);flex-direction:column;gap:8px" data-act="pjOpen2" data-x="${P.id}"><div style="display:flex;gap:10px;align-items:center;width:100%"><div style="flex:1;min-width:0"><div class="t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(P.name)}</div><div class="s">${M(P.own)?first(P.own):'—'} · ${s.done}/${s.L.length} itens · ${cur} em execução</div></div><b class="fd" style="font-size:18px">${s.tot}%</b></div><div class="bar" style="height:6px;width:100%"><i style="width:${s.tot}%;background:#7C5CD6"></i></div>${lt||noown||nod?`<div style="display:flex;gap:6px;flex-wrap:wrap">${lt?`<span class="chip" style="background:var(--lates);color:var(--late)">${lt} atrasado${lt>1?'s':''}</span>`:''}${nod?`<span class="chip" style="background:var(--warns);color:#8A6200">${nod} sem datas</span>`:''}${noown?`<span class="chip" style="background:var(--line2);color:var(--ink2)">${noown} sem responsável</span>`:''}</div>`:''}</div>`}).join('')}</div></div>`;
+ return _vg().replace(/<\/div>\s*$/,card+'</div>')}}
+ACT.pjOpen2=x=>{S.view='projetos';S.pj=x;S.ptab='geral';history.replaceState(null,'','#projetos');render()};
 ACT.pjFromDem=x=>{S.open=null;S.view='projetos';S.pj=x;S.ptab='geral';history.replaceState(null,'','#projetos');render()};
 function applyUI(){document.documentElement.dataset.theme=S.theme==='dark'?'dark':'light'}
 function saveUI(){try{localStorage.setItem('asid-ui',JSON.stringify({col:!!S.col,theme:S.theme||'light'}))}catch(e){}}
