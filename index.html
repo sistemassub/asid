@@ -743,6 +743,25 @@ body{background:radial-gradient(1200px 600px at 85% -10%,rgba(0,84,154,.06),tran
 .lgpj{width:14px;height:10px;border-radius:3px;display:inline-block;background:repeating-linear-gradient(90deg,#7C5CD644 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1.5px #7C5CD6}
 .pjtag{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;letter-spacing:.04em;color:#5E3EA0;background:#F0EAFB;border-radius:999px;padding:1px 7px;flex:none}[data-theme=dark] .pjtag{background:#2A2140;color:#C9B5F5}
 .gbar.pjgb{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 6px,transparent 6px 12px)!important}
+.mhero2{display:grid;grid-template-columns:auto 1fr 260px auto;gap:20px;align-items:center}
+.mload{border-left:1px solid var(--line2);padding-left:20px}.mload .lt{display:flex;align-items:baseline;justify-content:space-between;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px}.mload .lt b{font-family:var(--fd);font-size:22px}.mload .lt small{font-size:12px;color:var(--mute);font-weight:500}.mload .load{margin:0}
+.mstats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mst{background:var(--panel);border-radius:18px;box-shadow:var(--sh);border:1px solid rgba(20,22,35,.06);padding:14px 16px;display:flex;gap:12px;align-items:center}.mst>span{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none}.mst b{font-family:var(--fd);font-size:22px;font-weight:600;display:block;line-height:1.1}.mst small{font-size:12px;color:var(--ink2)}
+.mgrid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+.seg.sm button{height:30px;padding:0 11px;font-size:12.5px}
+.mgrid>*{min-width:0}.mgrid .seg{max-width:100%;overflow-x:auto;scrollbar-width:none}.mgrid .seg button{flex:none}
+.mwh{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin:14px 0 4px}
+.mw{display:grid;grid-template-columns:34px minmax(0,1fr) 140px 112px;gap:12px;align-items:center;padding:10px 8px;margin:0 -8px;border-radius:12px;cursor:pointer;transition:background .12s}.mw:hover{background:var(--line2)}
+.mw+.mw{border-top:1px solid var(--line2)}.mw:hover+.mw{border-top-color:transparent}
+.mwi{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+.mwt{min-width:0}.mwt .t{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mwt .s{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mwp{display:flex;align-items:center;gap:8px}.mwp .bar{flex:1;height:6px}.mwp b{font-size:12px;width:32px;text-align:right}
+.mwd{font-size:12px;text-align:right;white-space:nowrap}
+.agd{display:flex;gap:12px;padding:8px 0}.agd+.agd{border-top:1px solid var(--line2)}
+.agdd{width:38px;text-align:center;flex:none}.agdd b{display:block;font-family:var(--fd);font-size:18px;line-height:1.1}.agdd small{font-size:10.5px;color:var(--mute);text-transform:uppercase;font-weight:600}
+.agi{border-left:3px solid var(--c);padding:3px 0 3px 10px;margin-bottom:6px;cursor:pointer;border-radius:2px}.agi:last-child{margin-bottom:0}.agi:hover .t{color:var(--acc)}.agi .t{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agi .s{font-size:11.5px;color:var(--mute)}
+@media (max-width:1150px){.mhero2{grid-template-columns:auto 1fr}.mhero2 .mload{grid-column:1/-1;border-left:0;padding-left:0}.mgrid{grid-template-columns:1fr}}
+@media (max-width:700px){.mstats{grid-template-columns:1fr 1fr}.mw{grid-template-columns:34px minmax(0,1fr) 80px}.mw .mwp{display:none}}
 /* projetos */
 .fg .s1{grid-column:span 1}.fg .s5{grid-column:span 5}
 .flab{font-size:12px;font-weight:600;color:var(--ink2)}
@@ -1470,27 +1489,47 @@ VIEWS.radar=()=>{
 function memberPanel(id){
  const m=M(id),mine=DB.demands.filter(d=>d.owner===id),act=mine.filter(d=>!isClosed(d)),done=mine.filter(isDone).sort((a,b)=>(b.concludedAt||'').localeCompare(a.concludedAt||''));
  const colab=DB.demands.filter(d=>d.collabs.includes(id)&&!isClosed(d));
- const now2=act.filter(d=>late(d)||soon(d)||d.priority==='urgente').sort((a,b)=>(a.due||'9').localeCompare(b.due||'9'));
- const pct=mine.length?Math.round(mine.reduce((a,d)=>a+prog(d),0)/mine.length):0;
- const n=act.length,lim=DB.settings.maxLoad,lc=n>lim?'#E5484D':n===lim?'#E8A317':'#1F9D55';
- const mySteps=DB.demands.flatMap(d=>d.steps.filter(s=>s.owner===id&&!s.done&&!isClosed(d)).map(s=>({s,d})));
- const acts=DB.logs.filter(l=>l.by===id).slice(0,8);
- const stats=[[n,'Ativas sob sua responsabilidade'],[act.filter(d=>d.status==='andamento'||d.status==='revisao').length,'Em andamento'],[done.length,'Concluídas'],[act.filter(late).length,'Atrasadas'],[act.filter(d=>!late(d)&&d.due&&left(d)<=7).length,'Vencem em 7 dias'],[pct+'%','Conclusão média']];
- const item=d=>`<div class="it" data-act="open" data-x="${d.id}"><div style="min-width:0"><div class="tt">${esc(d.title)}</div><div class="mm"><span class="code">${d.code}</span> · ${STATUS[d.status].l} · ${prog(d)}%</div></div>${dueChip(d)}</div>`;
+ const mySteps=DB.demands.flatMap(d=>d.steps.filter(s=>s.owner===id&&!s.done&&!isClosed(d)&&d.owner!==id).map(s=>({s,d})));
+ const pjI=(typeof pjActive==='function'?pjActive():[]).filter(x=>x.n.it.own===id),pjM=(DB.projects||[]).filter(P=>P.own===id);
+ const acts=DB.logs.filter(l=>l.by===id).slice(0,5);
+ const lim=DB.settings.maxLoad,ld=loadOf(id),lc=ld>lim?'#E5484D':ld===lim?'#E8A317':'#1F9D55';
+ const D7=addDays(TODAY,7);
+ // linhas unificadas
+ const R=[];
+ act.forEach(d=>R.push({k:'resp',t:d.title,code:d.code,sub:STATUS[d.status].l,p:prog(d),due:d.due,late:late(d),hot:late(d)||soon(d)||d.priority==='urgente',urg:d.priority==='urgente',a:'open',x:d.id,ic:'layers',c:'var(--acc)'}));
+ colab.forEach(d=>R.push({k:'col',t:d.title,code:d.code,sub:`colabora com ${M(d.owner)?first(d.owner):'—'}`,p:prog(d),due:d.due,late:late(d),hot:late(d)||soon(d),a:'open',x:d.id,ic:'users',c:'#0EA5B7',who:d.owner}));
+ pjI.forEach(x=>R.push({k:'pj',t:x.n.it.name,code:x.n.it.code,sub:x.P.name,p:pjPr(x.n),due:x.n.fim,late:x.late,hot:x.late||x.risk||(x.n.fim&&x.n.fim<=D7),a:'pjGoItem',x:x.P.id+'|'+x.n.it.id,ic:'folder',c:'#7C5CD6'}));
+ pjM.forEach(P=>{const sm=pjSummary(P);if(sm.tot>=100&&P.items.length)return;R.push({k:'pjm',t:P.name,code:'GERENTE',sub:`${sm.done}/${sm.L.length} itens${sm.lt.length?` · ${sm.lt.length} atrasados`:''}`,p:sm.tot,due:P.fim,late:false,hot:sm.lt.length>0,a:'pjOpen2',x:P.id,ic:'folder',c:'#7C5CD6'})});
+ mySteps.forEach(({s,d})=>R.push({k:'step',t:s.title,code:d.code,sub:`etapa de ${esc(d.title)}`,p:null,due:d.due,late:late(d),hot:late(d),a:'open',x:d.id,ic:'check',c:'#E8A317'}));
+ const cnt={todos:R.length,resp:R.filter(r=>r.k==='resp').length,col:R.filter(r=>r.k==='col').length,pj:R.filter(r=>r.k==='pj'||r.k==='pjm').length,step:R.filter(r=>r.k==='step').length};
+ const tab=S.mct&&cnt[S.mct]!==undefined?S.mct:'todos';
+ const vis=R.filter(r=>tab==='todos'||r.k===tab||(tab==='pj'&&r.k==='pjm')).sort((a,b)=>(b.late-a.late)||(b.hot-a.hot)||((a.due||'9999').localeCompare(b.due||'9999')));
+ const dueTxt=r=>{if(!r.due)return '<span class="mwd muted">sem prazo</span>';const dl=diff(r.due,TODAY);return `<span class="mwd" style="${r.late?'color:var(--late);font-weight:600':dl<=3?'color:#B07A00;font-weight:600':''}">${r.late?`atrasado ${plural(-dl,'dia','dias')}`:dl===0?'vence hoje':dl===1?'amanhã':dl<=14?`em ${dl} dias`:fd(r.due)}</span>`};
+ const row=r=>`<div class="mw" data-act="${r.a}" data-x="${r.x}"><span class="mwi" style="background:${tint(r.c.startsWith('#')?r.c:'#00549A',.12)};color:${r.c}">${ic(r.ic,15)}</span><div class="mwt"><div class="t">${esc(r.t)}</div><div class="s"><span class="code">${esc(r.code)}</span> · ${r.sub}</div></div><div class="mwp">${r.p!=null?`<div class="bar"><i style="width:${r.p}%;background:${r.late?'var(--late)':r.p>=100?'var(--ok)':r.c}"></i></div><b>${r.p}%</b>`:''}</div>${dueTxt(r)}</div>`;
+ const hot=vis.filter(r=>r.hot),rest=vis.filter(r=>!r.hot);
+ // agenda 14 dias
+ const A14=addDays(TODAY,14),ag=[];
+ act.forEach(d=>{if(d.due&&d.due>=TODAY&&d.due<=A14)ag.push({d:d.due,t:d.title,s:`${d.code} · prazo`,a:'open',x:d.id,c:'var(--acc)'})});
+ colab.forEach(d=>{if(d.due&&d.due>=TODAY&&d.due<=A14)ag.push({d:d.due,t:d.title,s:`${d.code} · prazo (colaboração)`,a:'open',x:d.id,c:'#0EA5B7'})});
+ pjI.forEach(x=>{if(x.n.fim&&x.n.fim>=TODAY&&x.n.fim<=A14)ag.push({d:x.n.fim,t:x.n.it.name,s:`${x.n.it.code} · ${x.P.name}`,a:'pjGoItem',x:x.P.id+'|'+x.n.it.id,c:'#7C5CD6'})});
+ (DB.meetings||[]).forEach(mt=>{if((mt.people||[]).includes(id)&&mt.date>=TODAY&&mt.date<=A14)ag.push({d:mt.date,t:mt.title,s:`reunião${mt.time?' · '+mt.time:''}`,a:'meeting',x:mt.id,c:ETYPES.reuniao.c})});
+ DB.events.forEach(e=>{if((e.people||[]).includes(id)&&e.date>=TODAY&&e.date<=A14)ag.push({d:e.date,t:e.title,s:`${(ETYPES[e.type]||{}).l||'evento'}${e.time?' · '+e.time:''}`,a:'event',x:e.id,c:(ETYPES[e.type]||{}).c||'#6B6F7C'})});
+ ag.sort((a,b)=>a.d.localeCompare(b.d));const agD=[...new Set(ag.map(a=>a.d))];
+ const onT=done.filter(onTime).length;
  return `<div class="anim">
- <section class="card cp mhero"><span data-act="profile" data-x="${id}" style="cursor:pointer" title="Ver perfil">${av(id,56)}</span><div><h2>${esc(m.name)}</h2><div class="muted">${m.role} · ${m.area}</div>${(()=>{const p=PROF[id]||{},vn=vacNow(id),nx=vacNext(id).filter(v=>v!==vn)[0];return `<div class="mcont">${p.email?`<span>${ic('mail',13)}${esc(p.email)}</span>`:''}${p.telefone?`<span>${ic('phone',13)}${esc(p.telefone)}</span>`:''}${vn?`<span class="badge" style="background:${tint(ETYPES.ferias.c,.14)};color:${ETYPES.ferias.c}">🌴 de férias até ${fd(vn.fim)}</span>`:nx?`<span class="badge" style="background:${tint(ETYPES.ferias.c,.12)};color:${ETYPES.ferias.c}">🌴 férias ${fd(nx.ini)}–${fd(nx.fim)}</span>`:''}<button class="lnk" data-act="profile" data-x="${id}">ver perfil</button></div>`})()}</div>
-  <div class="r">${id===S.me?`<button class="btn acc" data-act="new">${ic('plus',15,2.2)}Nova demanda</button>`:''}</div></section>
- <section class="grid g6 mt">${stats.map((s,i)=>`<div class="card stat"><div class="v" style="${i===3&&s[0]?'color:var(--late)':''}">${s[0]}</div><div class="l">${s[1]}</div></div>`).join('')}</section>
- <section class="grid g3 mt">
-  <div class="card cp"><div class="ch"><span style="color:var(--late)">${ic('target',16)}</span><h3>Prioridade agora</h3><span class="hint">atrasadas, urgentes e prazos próximos</span></div><div class="mini">${now2.map(item).join('')||'<div class="empty">Nada crítico. Bom trabalho!</div>'}</div></div>
-  <div class="card cp"><div class="ch"><span style="color:var(--acc)">${ic('layers',16)}</span><h3>Todas as ativas</h3><span class="hint r">${act.length}</span></div><div class="mini">${act.sort((a,b)=>(a.due||'9').localeCompare(b.due||'9')).map(item).join('')||'<div class="empty">Sem demandas ativas.</div>'}</div></div>
-  <div class="card cp"><div class="ch"><span style="color:#0EA5B7">${ic('users',16)}</span><h3>Colaborando em</h3><span class="hint r">${colab.length}</span></div><div class="mini">${colab.map(d=>`<div class="it" data-act="open" data-x="${d.id}"><div style="min-width:0"><div class="tt">${esc(d.title)}</div><div class="mm">com ${first(d.owner)} · ${prog(d)}%</div></div>${av(d.owner,24)}</div>`).join('')||'<div class="empty">Nenhuma colaboração ativa.</div>'}</div></div>
-  ${(()=>{const L=(typeof pjActive==='function'?pjActive():[]).filter(x=>x.n.it.own===id).sort((a,b)=>(b.late-a.late)||((a.n.fim||'9').localeCompare(b.n.fim||'9')));return L.length?`<div class="card cp"><div class="ch"><span style="color:#7C5CD6">${ic('folder',16)}</span><h3>Itens de projeto</h3><span class="hint r">${L.length}</span></div><div class="mini">${L.slice(0,8).map(x=>`<div class="it" data-act="pjGoItem" data-x="${x.P.id}|${x.n.it.id}"><div style="min-width:0"><div class="tt">${esc(x.n.it.name)}</div><div class="mm"><span class="code">${esc(x.n.it.code)}</span> · ${esc(x.P.name)} · ${pjPr(x.n)}%</div></div>${x.late?`<span class="chip" style="background:var(--lates);color:var(--late)">atrasado</span>`:x.n.fim?`<span class="muted" style="font-size:12px;white-space:nowrap">até ${fd(x.n.fim)}</span>`:''}</div>`).join('')}${L.length>8?`<div class="muted" style="font-size:12px;padding:6px 0">+${L.length-8} itens</div>`:''}</div></div>`:''})()}
- </section>
- <section class="grid g3 mt">
-  <div class="card cp"><div class="ch"><span style="color:#E8A317">${ic('check',16)}</span><h3>Etapas sob sua responsabilidade</h3><span class="hint r">${mySteps.length}</span></div><div class="mini">${mySteps.slice(0,8).map(({s,d})=>`<div class="it" data-act="open" data-x="${d.id}" data-tab="etapas"><div style="min-width:0"><div class="tt">${esc(s.title)}</div><div class="mm">${d.code} · ${esc(d.title)}</div></div>${ic('cr',14)}</div>`).join('')||'<div class="empty">Nenhuma etapa pendente.</div>'}</div></div>
-  <div class="card cp"><div class="ch"><span style="color:var(--ok)">${ic('flag',16)}</span><h3>Histórico de entregas</h3><span class="hint r">${done.filter(onTime).length}/${done.length} no prazo</span></div><div class="mini">${done.slice(0,8).map(d=>`<div class="it" data-act="open" data-x="${d.id}"><div style="min-width:0"><div class="tt">${esc(d.title)}</div><div class="mm">Entregue em ${fd(d.concludedAt)} · prazo ${fd(d.due)}</div></div><span class="badge" style="background:${onTime(d)?'var(--oks)':'var(--lates)'};color:${onTime(d)?'var(--ok)':'var(--late)'}">${onTime(d)?'no prazo':'com atraso'}</span></div>`).join('')||'<div class="empty">Ainda sem entregas.</div>'}</div></div>
-  <div class="card cp"><div class="ch"><span style="color:var(--mute)">${ic('hist',16)}</span><h3>Atividade recente</h3></div><div class="mini">${acts.map(l=>`<div class="it" data-act="open" data-x="${l.did||''}"><div style="min-width:0"><div class="tt" style="font-weight:400">${l.text}</div><div class="mm">${l.did&&D(l.did)?D(l.did).code+' · ':''}${rel(l.at)}</div></div></div>`).join('')||'<div class="empty">Sem atividade.</div>'}</div></div>
+ <section class="card cp mhero mhero2"><span data-act="profile" data-x="${id}" style="cursor:pointer" title="Ver perfil">${av(id,56)}</span><div style="min-width:0"><h2>${esc(m.name)}</h2><div class="muted">${m.role} · ${m.area}</div>${(()=>{const p=PROF[id]||{},vn=vacNow(id),nx=vacNext(id).filter(v=>v!==vn)[0];return `<div class="mcont">${p.email?`<span>${ic('mail',13)}${esc(p.email)}</span>`:''}${p.telefone?`<span>${ic('phone',13)}${esc(p.telefone)}</span>`:''}${vn?`<span class="badge" style="background:${tint(ETYPES.ferias.c,.14)};color:${ETYPES.ferias.c}">🌴 de férias até ${fd(vn.fim)}</span>`:nx?`<span class="badge" style="background:${tint(ETYPES.ferias.c,.12)};color:${ETYPES.ferias.c}">🌴 férias ${fd(nx.ini)}–${fd(nx.fim)}</span>`:''}<button class="lnk" data-act="profile" data-x="${id}">ver perfil</button></div>`})()}</div>
+  <div class="mload"><div class="lt"><span>Carga atual</span><b style="color:${lc}">${ld}<small>/${lim}</small></b></div>${loadBar(id).replace(/<div class="lt">[\s\S]*?<\/div>/,'')}<div class="muted" style="font-size:11.5px;margin-top:6px">${act.length} responsável · ${colab.length} colaborando${projOf(id)?` · ${projOf(id)} de projeto`:''}</div></div>
+  ${id===S.me?`<button class="btn acc" data-act="new">${ic('plus',15,2.2)}Nova demanda</button>`:''}</section>
+ <section class="mstats mt">${[[R.filter(r=>r.late).length,'Atrasados','alert','#E5484D'],[R.filter(r=>!r.late&&r.due&&r.due<=D7).length,'Vencem em 7 dias','clock','#E8A317'],[R.filter(r=>r.k!=='step').length,'Frentes ativas','layers','#00549A'],[`${onT}/${done.length}`,'Entregas no prazo','flag','#1F9D55']].map(([v,l,i,c])=>`<div class="mst"><span style="background:${tint(c,.12)};color:${c}">${ic(i,16)}</span><div><b style="${l==='Atrasados'&&v?'color:var(--late)':''}">${v}</b><small>${l}</small></div></div>`).join('')}</section>
+ <section class="mgrid mt">
+  <div class="card cp"><div class="ch" style="flex-wrap:wrap;gap:10px"><h3>Meu trabalho</h3><div class="seg sm r">${[['todos','Tudo'],['resp','Responsável'],['col','Colaborando'],['pj','Projetos'],['step','Etapas']].filter(([k])=>k==='todos'||cnt[k]).map(([k,l])=>`<button class="${tab===k?'on':''}" data-act="mct" data-x="${k}">${l} <span class="muted">${cnt[k]}</span></button>`).join('')}</div></div>
+   ${vis.length?`${hot.length?`<div class="mwh" style="color:var(--late)">${ic('target',13)}Precisa de atenção · ${hot.length}</div>${hot.map(row).join('')}`:''}${rest.length?`<div class="mwh">${hot.length?'Demais frentes':'Em dia'} · ${rest.length}</div>${rest.map(row).join('')}`:''}`:`<div class="empty">Nada por aqui.${id===S.me?' Que tal cadastrar uma nova demanda?':''}</div>`}
+  </div>
+  <div class="grid" style="align-content:start">
+   <div class="card cp"><div class="ch"><span style="color:var(--acc)">${ic('cal',16)}</span><h3>Próximos 14 dias</h3></div>${agD.length?agD.map(dd=>{const dt=parse(dd);return `<div class="agd"><div class="agdd"><b>${dt.getDate()}</b><small>${['dom','seg','ter','qua','qui','sex','sáb'][dt.getDay()]}</small></div><div style="flex:1;min-width:0">${ag.filter(a=>a.d===dd).map(a=>`<div class="agi" data-act="${a.a}" data-x="${a.x}" style="--c:${a.c}"><div class="t">${esc(a.t)}</div><div class="s">${esc(a.s)}</div></div>`).join('')}</div></div>`}).join(''):'<div class="empty">Agenda livre nas próximas duas semanas.</div>'}</div>
+   <div class="card cp"><div class="ch"><span style="color:var(--ok)">${ic('flag',16)}</span><h3>Últimas entregas</h3><span class="hint r">${onT}/${done.length} no prazo</span></div><div class="mini">${done.slice(0,4).map(d=>`<div class="it" data-act="open" data-x="${d.id}"><div style="min-width:0"><div class="tt">${esc(d.title)}</div><div class="mm">${fd(d.concludedAt)} · prazo ${fd(d.due)}</div></div><span class="badge" style="background:${onTime(d)?'var(--oks)':'var(--lates)'};color:${onTime(d)?'var(--ok)':'var(--late)'}">${onTime(d)?'no prazo':'atrasou'}</span></div>`).join('')||'<div class="empty">Ainda sem entregas.</div>'}</div></div>
+   <div class="card cp"><div class="ch"><span style="color:var(--mute)">${ic('hist',16)}</span><h3>Atividade recente</h3></div><div class="mini">${acts.map(l=>`<div class="it" data-act="open" data-x="${l.did||''}"><div style="min-width:0"><div class="tt" style="font-weight:400">${l.text}</div><div class="mm">${l.did&&D(l.did)?D(l.did).code+' · ':''}${rel(l.at)}</div></div></div>`).join('')||'<div class="empty">Sem atividade.</div>'}</div></div>
+  </div>
  </section></div>`;
 }
 VIEWS['minha-carteira']=()=>memberPanel(S.me);
@@ -2415,7 +2454,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-23.5';
+const APP_V='2026-11-23.6';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
@@ -2788,6 +2827,7 @@ ACT.pjGoItem=x=>{const [pid,iid]=String(x).split('|');if(!PJ(pid))return toast('
   return `<div class="pjli" style="margin:0;border:1px solid var(--line2);flex-direction:column;gap:8px" data-act="pjOpen2" data-x="${P.id}"><div style="display:flex;gap:10px;align-items:center;width:100%"><div style="flex:1;min-width:0"><div class="t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(P.name)}</div><div class="s">${M(P.own)?first(P.own):'—'} · ${s.done}/${s.L.length} itens · ${cur} em execução</div></div><b class="fd" style="font-size:18px">${s.tot}%</b></div><div class="bar" style="height:6px;width:100%"><i style="width:${s.tot}%;background:#7C5CD6"></i></div>${lt||noown||nod?`<div style="display:flex;gap:6px;flex-wrap:wrap">${lt?`<span class="chip" style="background:var(--lates);color:var(--late)">${lt} atrasado${lt>1?'s':''}</span>`:''}${nod?`<span class="chip" style="background:var(--warns);color:#8A6200">${nod} sem datas</span>`:''}${noown?`<span class="chip" style="background:var(--line2);color:var(--ink2)">${noown} sem responsável</span>`:''}</div>`:''}</div>`}).join('')}</div></div>`;
  return _vg().replace(/<\/div>\s*$/,card+'</div>')}}
 ACT.pjOpen2=x=>{S.view='projetos';S.pj=x;S.ptab='geral';history.replaceState(null,'','#projetos');render()};
+ACT.mct=x=>{S.mct=x;render()};
 ACT.pjFromDem=x=>{S.open=null;S.view='projetos';S.pj=x;S.ptab='geral';history.replaceState(null,'','#projetos');render()};
 function applyUI(){document.documentElement.dataset.theme=S.theme==='dark'?'dark':'light'}
 function saveUI(){try{localStorage.setItem('asid-ui',JSON.stringify({col:!!S.col,theme:S.theme||'light'}))}catch(e){}}
