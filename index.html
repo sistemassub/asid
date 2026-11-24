@@ -1033,6 +1033,47 @@ h1,h2,h3,.fd{letter-spacing:-.015em}
 [data-theme=dark] .lform{background:rgba(24,26,32,.6);border-color:rgba(255,255,255,.08)}
 [data-theme=dark] .drop,[data-theme=dark] .pjdrop{background:rgba(255,255,255,.03)}
 [data-theme=dark] .scroll,[data-theme=dark] .db,[data-theme=dark] .mb{scrollbar-color:rgba(255,255,255,.16) transparent}
+
+/* gráfico de status */
+.stc{display:flex;flex-direction:column}
+.stc .ch{margin-bottom:10px}
+.stc-b{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center;flex:1}
+.stc-d{position:relative;display:grid;place-items:center}
+.stc-d::before{content:"";position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,rgba(47,123,196,.16),transparent 68%);filter:blur(10px)}
+.stc-svg{position:relative;overflow:visible;width:168px;height:168px}
+.stc-svg .trk{stroke:rgba(20,40,80,.06)}
+.stc-svg .inn{filter:drop-shadow(0 6px 14px rgba(15,45,90,.12))}
+.stc-svg .seg{cursor:pointer;transition:stroke-width .2s var(--ease),opacity .2s;animation:stcin .9s var(--ease) both;filter:drop-shadow(0 3px 6px rgba(15,35,70,.16))}
+.stc-svg:hover .seg{opacity:.55}.stc-svg .seg:hover{opacity:1;stroke-width:20px}
+@keyframes stcin{from{stroke-dasharray:0 var(--C)}to{stroke-dasharray:var(--d) var(--C)}}
+.stc-svg text,.stc-svg .inn{pointer-events:none}
+.stc-svg .n{font-family:var(--fd);font-size:40px;font-weight:600;fill:var(--ink);letter-spacing:-.03em}
+.stc-svg .l{font-size:11.5px;fill:var(--mute);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.stc-l{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stc-r{display:grid;grid-template-columns:10px minmax(0,1fr) auto 34px;grid-template-rows:auto 3px;column-gap:10px;row-gap:4px;align-items:center;padding:5px 8px;margin:0 -8px;border-radius:10px;text-align:left;font-size:12.5px;transition:background .15s}
+.stc-r:hover{background:rgba(0,84,154,.05)}
+.stc-r .dt{grid-row:1;width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 18%,transparent)}
+.stc-r .lb{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stc-r .br{grid-column:2/5;grid-row:2;height:3px;border-radius:999px;background:rgba(20,40,80,.06);overflow:hidden}
+.stc-r .br i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--c) 70%,#fff),var(--c));animation:stcbar .8s var(--ease) both}
+@keyframes stcbar{from{width:0}}
+.stc-r b{font-family:var(--fd);font-weight:600;font-size:14px;text-align:right}
+.stc-r small{font-size:11px;color:var(--mute);text-align:right;font-weight:600}
+.stc-r.z{opacity:.42}.stc-r.z:hover{opacity:.8}
+.stc-late{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:14px;background:linear-gradient(90deg,rgba(229,72,77,.10),rgba(229,72,77,.03));border:1px solid rgba(229,72,77,.18);color:#A3262A;font-size:12.5px;text-align:left;transition:transform .18s var(--ease),background .2s}
+.stc-late:hover{transform:translateY(-1px);background:linear-gradient(90deg,rgba(229,72,77,.14),rgba(229,72,77,.05))}
+.stc-late b{font-family:var(--fd);font-size:14px}
+.stc-late .ic2{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:rgba(229,72,77,.14);flex:none}
+.stc-late .go{margin-left:auto;font-weight:600;font-size:12px}
+.stc-late.ok{background:linear-gradient(90deg,rgba(31,157,85,.10),rgba(31,157,85,.03));border-color:rgba(31,157,85,.18);color:#156B3A;cursor:default}
+.stc-late.ok .ic2{background:rgba(31,157,85,.14)}
+[data-theme=dark] .stc-svg .trk{stroke:rgba(255,255,255,.06)}
+[data-theme=dark] .stc-svg .inn{fill:rgba(255,255,255,.03);filter:none}
+[data-theme=dark] .stc-late{color:#F28B8E}[data-theme=dark] .stc-late.ok{color:#6FD39B}
+[data-theme=dark] .stc-r .br{background:rgba(255,255,255,.06)}
+@media (max-width:760px){.stc-b{grid-template-columns:1fr;justify-items:center}.stc-l{width:100%}}
+/* menu lateral sem barra de rolagem visível */
+.side{overflow-x:hidden;scrollbar-width:none}.side::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
@@ -1435,6 +1476,16 @@ function lineChart(labels,series,h=210){
 function legendRow(items){return `<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2)">${items.map(([l,c])=>`<span style="display:inline-flex;gap:6px;align-items:center"><span style="width:9px;height:9px;border-radius:3px;background:${c}"></span>${l}</span>`).join('')}</div>`}
 
 /* =============== charts =============== */
+function statusCard(sc,all,L,act){
+ const tot=all.length,size=188,th=16,r=(size-th)/2,C=2*Math.PI*r,cx=size/2,nz=sc.filter(x=>x.v>0),gap=nz.length>1?th+6:0;let off=0;
+ const pct=v=>tot?Math.round(v/tot*100):0,done=(sc.find(x=>x.l===STATUS.concluida.l)||{v:0}).v;
+ const arcs=sc.map((x,i)=>{if(!x.v)return '';const len=x.v/tot*C,d=Math.max(.001,len-gap);const el=`<circle class="seg" cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${x.c}" stroke-width="${th}" stroke-linecap="round" stroke-dasharray="${d} ${C}" stroke-dashoffset="${-(off+gap/2)}" transform="rotate(-90 ${cx} ${cx})" style="--d:${d}px;--C:${C}px;animation-delay:${i*.06}s" data-act="goFilter" data-x="status:${SORD[i]}"><title>${x.l}: ${x.v} (${pct(x.v)}%)</title></circle>`;off+=len;return el}).join('');
+ const svg=`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="stc-svg"><defs><radialGradient id="stcg" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></radialGradient></defs><circle cx="${cx}" cy="${cx}" r="${r}" fill="none" class="trk" stroke-width="${th}"/><circle cx="${cx}" cy="${cx}" r="${r-th/2-10}" class="inn" fill="url(#stcg)"/>${arcs}<text x="${cx}" y="${cx-6}" text-anchor="middle" class="n">${tot}</text><text x="${cx}" y="${cx+16}" text-anchor="middle" class="l">demandas</text></svg>`;
+ const rows=sc.map((x,i)=>`<button class="stc-r ${x.v?'':'z'}" data-act="goFilter" data-x="status:${SORD[i]}" title="Ver demandas: ${x.l}"><span class="dt" style="--c:${x.c}"></span><span class="lb">${x.l}</span><span class="br"><i style="width:${pct(x.v)}%;--c:${x.c}"></i></span><b>${x.v}</b><small>${pct(x.v)}%</small></button>`).join('');
+ return `<div class="card cp stc"><div class="ch"><h3>Status das demandas</h3><span class="hint r">${act.length} ativas · ${pct(done)}% concluídas</span></div>
+ <div class="stc-b"><div class="stc-d">${svg}</div><div class="stc-l">${rows}</div></div>
+ <button class="stc-late ${L.length?'':'ok'}" ${L.length?'data-act="goFilter" data-x="status:atrasada"':'disabled'}><span class="ic2">${ic(L.length?'alert':'check',15,2.2)}</span><span><b>${L.length}</b> ${L.length===1?'atrasada':'atrasadas'} entre as ativas</span><span class="go">${L.length?'ver':''}</span></button></div>`;
+}
 function donut(segs,size=150,th=18,center=''){
  const r=(size-th)/2,C=2*Math.PI*r,tot=segs.reduce((a,s)=>a+s.v,0)||1;let off=0;
  const arcs=segs.filter(s=>s.v>0).map(s=>{const len=s.v/tot*C;const g=segs.filter(x=>x.v>0).length>1?2:0;const el=`<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${s.c}" stroke-width="${th}" stroke-dasharray="${Math.max(0,len-g)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})"><title>${s.l}: ${s.v}</title></circle>`;off+=len;return el}).join('');
@@ -1523,7 +1574,7 @@ VIEWS['visao-geral']=()=>{
  <div class="hlist">${helps.map(({d,hp})=>`<div class="hq" data-act="open" data-x="${d.id}" title="${esc(hp.text)}">${av(hp.by,28)}<div class="hqt"><b>${first(hp.by)}</b> · ${hp.type.toLowerCase()}<small>${d.code} · ${esc(d.title)}</small></div>${hp.by!==S.me?`<button class="btn sm acc" data-act="helpme" data-x="${d.id}|${hp.id}" title="Posso ajudar">${ic('heart',13)}</button>`:''}</div>`).join('')||'<div class="empty" style="padding:14px">Nenhum pedido em aberto.</div>'}</div></section></div>
  <section class="grid g6 mt">${kpis.map(k=>`<button class="card kpis" data-act="goFilter" data-x="${k[5]}" title="${k[0]} · ${k[4]}"><span class="ib" style="background:${tint(k[3],.1)};color:${k[3]}">${ic(k[2],15,2)}</span><span class="kt"><span class="kl">${k[0]}</span><span class="kv"><b>${k[1]}</b><small>${k[4]}</small></span></span></button>`).join('')}</section>
  <section class="grid mt g-side" style="grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)">
-  <div class="card cp"><div class="ch"><h3>Status das demandas</h3></div><div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">${donut(sc,150,20,`<text x="75" y="70" text-anchor="middle" font-family="Space Grotesk,Inter,sans-serif" font-size="28" font-weight="600" fill="#15151C">${all.length}</text><text x="75" y="92" text-anchor="middle" font-size="11" fill="#8B8B98">demandas</text>`)}<div class="legend" style="flex:1;min-width:160px">${sc.map(s=>`<div class="li"><span class="sw" style="background:${s.c}"></span>${s.l}<b>${s.v}</b></div>`).join('')}<div class="li" style="color:var(--late)"><span class="sw" style="background:var(--late)"></span>Atrasadas (entre as ativas)<b>${L.length}</b></div></div></div></div>
+  ${statusCard(sc,all,L,act)}
   <div class="card cp">${distBlock()}</div>
  </section>
  <section class="grid g4 hl4 mt">
@@ -2677,7 +2728,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-24.2';
+const APP_V='2026-11-24.3';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
