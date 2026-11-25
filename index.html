@@ -1457,6 +1457,7 @@ function guard(d){if(!canEdit(d)){toast('Você não tem permissão para editar e
 function quickConclude(d){d.steps.forEach(s=>{if(!s.done){s.done=true;s.doneAt=now()}});const from=d.status;d.status='concluida';d.concludedAt=TODAY;d.closing=d.closing||{delivery:'',results:'',date:TODAY,notes:'',by:S.me,at:now(),auto:true};
  log(d,'close','concluiu a demanda ao atingir 100%',[{f:'Status',a:STATUS[from].l,b:'Concluída'},{f:'Conclusão',a:'',b:fd(TODAY)}]);
  notify([...team(d),d.createdBy,...admins()],d,`concluiu <b>${d.code}</b> ${!d.due||TODAY<=d.due?'no prazo':'com atraso'}`,'close')}
+function autoStart(d){if(d&&d.status==='a_iniciar'&&(d.steps||[]).some(x=>x.done)){d.status='andamento';d.updatedAt=TODAY;log(d,'status','passou para <b>Em andamento</b> automaticamente (há etapa concluída)',[{f:'Status',a:STATUS.a_iniciar.l,b:STATUS.andamento.l}]);return true}return false}
 function setStatus(d,s){if(!d||d.status===s||!guard(d))return render();if(s==='concluida'){S.modal={type:'close',id:d.id};S.err='';return render()}
  const from=d.status;d.status=s;d.concludedAt=null;log(d,'status',`alterou o status para <b>${STATUS[s].l}</b>`,[{f:'Status',a:STATUS[from].l,b:STATUS[s].l}]);notify(team(d),d,`alterou o status de <b>${d.code}</b> para ${STATUS[s].l}`,'status');commit('Status atualizado')}
 function commit(msg){save();render();if(msg)toast(msg)}
@@ -2619,7 +2620,7 @@ const ACT={
  ck:x=>{const d=cur();if(!guard(d))return;const c=d.checklist.find(c=>c.id===x);c.done=!c.done;log(d,'step',`${c.done?'marcou':'desmarcou'} o requisito <b>${esc(c.text)}</b>`);commit()},
  ckdel:x=>{const d=cur();if(!guard(d))return;d.checklist=d.checklist.filter(c=>c.id!==x||c.req);d.updatedAt=TODAY;commit()},
  addck:()=>{const d=cur(),i=document.getElementById('newck');if(!guard(d)||!i.value.trim())return;d.checklist.push({id:uid(),text:i.value.trim(),done:false,req:false});log(d,'edit',`adicionou o requisito <b>${esc(i.value.trim())}</b>`);commit();setTimeout(()=>{const n=document.getElementById('newck');n&&n.focus()},0)},
- step:x=>{const d=cur();if(!guard(d))return;const s=d.steps.find(s=>s.id===x);s.done=!s.done;s.doneAt=s.done?now():null;delete s.auto100;log(d,'step',`${s.done?'concluiu':'reabriu'} a etapa <b>${esc(s.title)}</b>`);const all=d.steps.length&&d.steps.every(s=>s.done);commit(s.done?(all&&!isClosed(d)?'Todas as etapas concluídas':'Etapa concluída'):'');if(s.done&&all&&!isClosed(d)&&prog(d)>=100){quickConclude(d);commit('Demanda concluída')}},
+ step:x=>{const d=cur();if(!guard(d))return;const s=d.steps.find(s=>s.id===x);s.done=!s.done;s.doneAt=s.done?now():null;delete s.auto100;log(d,'step',`${s.done?'concluiu':'reabriu'} a etapa <b>${esc(s.title)}</b>`);if(s.done)autoStart(d);const all=d.steps.length&&d.steps.every(s=>s.done);commit(s.done?(all&&!isClosed(d)?'Todas as etapas concluídas':'Etapa concluída'):'');if(s.done&&all&&!isClosed(d)&&prog(d)>=100){quickConclude(d);commit('Demanda concluída')}},
  stepmv:x=>{const d=cur();if(!guard(d))return;const [id,dir]=x.split('|'),i=d.steps.findIndex(s=>s.id===id),j=i+(+dir);if(i<0||j<0||j>=d.steps.length)return;const [s]=d.steps.splice(i,1);d.steps.splice(j,0,s);log(d,'edit',`moveu a etapa <b>${esc(s.title)}</b> para a posição ${j+1}`);commit()},
 stepdel:x=>{const d=cur();if(!guard(d))return;const s=d.steps.find(s=>s.id===x);d.steps=d.steps.filter(s=>s.id!==x);log(d,'edit',`removeu a etapa <b>${esc(s.title)}</b>`);commit()},
  addstep:()=>{const d=cur(),i=document.getElementById('newstep'),o=document.getElementById('newstepown');if(!guard(d)||!i.value.trim())return;d.steps.push({id:uid(),title:i.value.trim(),owner:o.value||null,done:false,doneAt:null});log(d,'edit',`adicionou a etapa <b>${esc(i.value.trim())}</b>`);notify([o.value],d,`atribuiu a você a etapa “${esc(i.value.trim())}” em <b>${d.code}</b>`,'step');commit();setTimeout(()=>{const n=document.getElementById('newstep');n&&n.focus()},0)},
@@ -2734,7 +2735,7 @@ document.addEventListener('change',e=>{const t=e.target,k=t.dataset.chg;if(!k)re
  if(k==='pman'){const d=cur();if(!guard(d))return;d.progress=+t.value;
   if(d.progress>=100&&d.steps.some(x=>!x.done)){d.steps.forEach(x=>{if(!x.done){x.done=true;x.doneAt=now();x.auto100=true}});log(d,'progress',`atualizou o progresso para <b>100%</b> e marcou todas as etapas como concluídas`)}
   else if(d.progress<100&&d.steps.length&&d.steps.every(x=>x.done)){let ro=d.steps.filter(x=>x.auto100);if(!ro.length)ro=[d.steps[d.steps.length-1]];ro.forEach(x=>{x.done=false;x.doneAt=null;delete x.auto100});log(d,'progress',`atualizou o progresso para <b>${t.value}%</b> e reabriu ${ro.length>1?ro.length+' etapas':'a etapa <b>'+esc(ro[0].title)+'</b>'}`)}
-  else log(d,'progress',`atualizou o progresso para <b>${t.value}%</b>`);if(d.progress>=100&&!isClosed(d))quickConclude(d);commit(isDone(d)?'Demanda concluída':'')}
+  else log(d,'progress',`atualizou o progresso para <b>${t.value}%</b>`);autoStart(d);if(d.progress>=100&&!isClosed(d))quickConclude(d);commit(isDone(d)?'Demanda concluída':'')}
  if(k==='pfac'){const d=cur();if(!guard(d))return;const lb={urg:'Urgência',imp:'Impacto',inst:'Importância institucional'},o=d[t.dataset.x];d[t.dataset.x]=+t.value;log(d,'prio','reavaliou os critérios de prioridade',[{f:lb[t.dataset.x],a:String(o),b:t.value}]);commit()}
  if(k==='stepown'){const d=cur();if(!guard(d))return;const s=d.steps.find(s=>s.id===t.dataset.x);s.owner=t.value||null;log(d,'edit',`atribuiu a etapa <b>${esc(s.title)}</b> a ${s.owner?first(s.owner):'ninguém'}`);notify([s.owner],d,`atribuiu a você a etapa “${esc(s.title)}” em <b>${d.code}</b>`,'step');commit()}
  if(k==='files'){const d=cur();if(!guard(d))return;[...t.files].forEach(f=>{d.files.push({id:uid(),name:f.name,size:f.size,by:S.me,at:now()});log(d,'file',`anexou <b>${esc(f.name)}</b>`)});commit(plural(t.files.length,'arquivo anexado','arquivos anexados'))}
@@ -2756,7 +2757,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-25.1';
+const APP_V='2026-11-25.2';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
@@ -2821,7 +2822,7 @@ async function enter(session){
  if(error||!mem||!mem.some(m=>m.usuario===usuario)){S.err='Seu usuário do Hub não tem acesso à ASID. Fale com a coordenação da Assessoria.';S.boot='login';await SB.auth.signOut();S.me=null;render();return}
  setTeam(mem);S.me=usuario;
  try{await loadAll()}catch(e){S.err='Não foi possível carregar os dados: '+(e.message||e);S.boot='login';S.me=null;render();return}
- subscribe();loadHub();S.boot='ready';S.err='';const h=location.hash.slice(1);S.view=TITLES[h]&&h!=='membro'?h:'visao-geral';setSync('ok');render();
+ if(S.me&&DB.demands.filter(autoStart).length)save();subscribe();loadHub();S.boot='ready';S.err='';const h=location.hash.slice(1);S.view=TITLES[h]&&h!=='membro'?h:'visao-geral';setSync('ok');render();
 }
 function mapSeed(){let j=JSON.stringify(seed());Object.entries(ALIAS).forEach(([k,v])=>{j=j.split(`"${k}"`).join(`"${v}"`)});return JSON.parse(j)}
 function demoStart(){S.demo=true;S.err='';S.boot='login';S.loginSel=null;setTeam(DEMO_TEAM);let x=null;try{x=JSON.parse(localStorage.getItem(DEMO_KEY))}catch(e){}
