@@ -806,6 +806,7 @@ body{background:radial-gradient(1200px 600px at 85% -10%,rgba(0,84,154,.06),tran
 .pjsub{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid var(--line2);margin-bottom:6px;cursor:pointer}.pjsub:hover{border-color:var(--line)}
 .pjmode{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.pjmode>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px}.pjmode>div b{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink)}.pjmode>div span{font-size:12px;color:var(--mute);font-weight:400}.pjmode>div.on{border-color:var(--acc);background:var(--accs)}
 .pjprev{border:1px solid var(--line2);border-radius:14px;padding:8px 12px;max-height:220px;overflow:auto;margin-top:6px}.pjprev>div{display:flex;gap:8px;align-items:center;font-size:13px;padding:5px 0;color:var(--ink);font-weight:400}
+.pjdrop.busy{pointer-events:none;opacity:.9}
 .pjdrop{display:block;border:2px dashed rgba(0,84,154,.3);border-radius:18px;background:var(--accs);padding:28px;text-align:center;margin-top:14px;cursor:pointer}
 [data-theme=dark] .pjlink{background:linear-gradient(120deg,#2A2140,#14263A)}[data-theme=dark] .pjdem{background:#2A2140;color:#C9B5F5}[data-theme=dark] .pjtree .tr.l0{background:linear-gradient(90deg,rgba(58,134,207,.10),transparent 60%)}
 @media (max-width:1100px){.pjkpis{grid-template-columns:repeat(3,1fr)}.pjtree .th,.pjtree .tr{grid-template-columns:minmax(220px,1fr) 110px 130px 110px}.pjtree .th>:nth-child(5),.pjtree .tr>:nth-child(5){display:none}}
@@ -2757,7 +2758,7 @@ document.addEventListener('dragover',e=>{const col=e.target.closest&&e.target.cl
 document.addEventListener('drop',e=>{const col=e.target.closest&&e.target.closest('[data-drop]');if(!col||!dragId)return;e.preventDefault();const d=D(dragId);dragId=null;if(d)setStatus(d,col.dataset.drop);else render()});
 window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(S.me&&TITLES[h]&&h!==S.view&&!(h==='equipe'&&S.view==='membro')){S.view=h;render()}});
 /* =============== Supabase (login do Hub + banco + tempo real) =============== */
-const APP_V='2026-11-25.2';
+const APP_V='2026-11-26.1';
 async function checkVersion(){if(!/^https?:/.test(location.protocol))return;try{const t=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text(),m=t.match(/const APP_V='([^']+)'/);if(m&&m[1]!==APP_V&&!document.getElementById('newv')){const d=document.createElement('div');d.id='newv';d.className='newv';d.innerHTML='<span>Há uma nova versão da ASID.</span><button onclick="location.reload()">Atualizar agora</button>';document.body.appendChild(d)}}catch(_){}}
 setTimeout(checkVersion,4000);setInterval(checkVersion,3*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
 const SB_URL='https://wlixkuxembfiotbmyrgk.supabase.co',SB_KEY='sb_publishable_5kJA97mc8eDIbLdiEMiu0A_yoLrxx1_',DOMAIN='@scpma.local',HUB_URL='https://sistemassub.github.io/hubscpma/';
@@ -2941,7 +2942,7 @@ function pjList(){const Ps=PJS(),R=2*Math.PI*22;
  <div style="position:relative;width:56px;height:56px;flex:none"><svg width="56" height="56"><circle cx="28" cy="28" r="22" fill="none" stroke="var(--line2)" stroke-width="6"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--acc)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${R}" stroke-dashoffset="${R*(1-s.tot/100)}" transform="rotate(-90 28 28)"/></svg><b class="fd" style="position:absolute;inset:0;display:grid;place-items:center;font-size:13px">${s.tot}%</b></div></div>
  <div style="display:flex;gap:14px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--line2);font-size:12.5px;color:var(--ink2);flex-wrap:wrap"><span style="display:flex;gap:6px;align-items:center">${pjAv(P.own,20)}${M(P.own)?first(P.own):'—'}</span><span style="display:flex;gap:6px;align-items:center">${ic('cal',13)}${pjFd(P.ini)} → ${pjFd(P.fim)}</span><span style="margin-left:auto;display:flex;gap:6px;align-items:center">${s.lt.length?`<span class="chip" style="background:var(--lates);color:var(--late)">${s.lt.length} atrasado${s.lt.length>1?'s':''}</span>`:''}${canEditP(P)?`<span class="pjacts"><button class="iconb" data-act="pjEdit" data-x="${P.id}" title="Editar projeto">${ic('edit',14)}</button>${isAdmin()||P.by===S.me||P.own===S.me?`<button class="iconb dan" data-act="pjDel" data-x="${P.id}" title="Excluir projeto">${ic('trash',14)}</button>`:''}</span>`:''}</span></div></div>`}).join('')}
  <div class="card cp pjcard" data-act="pjConv" style="border:2px dashed ${tint('#00549A',.28)};background:transparent;box-shadow:none;display:grid;place-items:center;text-align:center;min-height:170px"><div><div style="color:var(--acc);display:grid;place-items:center;margin-bottom:8px">${ic('shuffle',24)}</div><b>Uma demanda cresceu?</b><div class="muted" style="max-width:270px;margin-top:4px;font-size:12.5px">Transforme em projeto e ganhe fases, EAP e cronograma — sem perder o histórico.</div></div></div>
- </div>${Ps.length?'':`<p class="muted" style="margin-top:14px;font-size:12.5px">Nenhum projeto ainda. Crie um do zero, importe a EAP de uma planilha ou transforme uma demanda.</p>`}`}
+ </div>${Ps.length?'':`<p class="muted" style="margin-top:14px;font-size:12.5px">Nenhum projeto ainda. Crie um do zero, importe a EAP de uma planilha ou imagem, ou transforme uma demanda.</p>`}`}
 
 function pjDetail(P){const s=pjSummary(P),{T,L,tot,done,lt}=s,e=canEditP(P),R=2*Math.PI*46;
  const wk=L.filter(n=>pjSt(n)!=='concluida'&&n.fim&&n.fim>=TODAY&&diff(n.fim,TODAY)<=14),ent=L.filter(n=>n.it.ent),entD=ent.filter(n=>pjSt(n)==='concluida').length,dem=P.items.filter(i=>i.did&&D(i.did));
@@ -2954,7 +2955,7 @@ function pjDetail(P){const s=pjSummary(P),{T,L,tot,done,lt}=s,e=canEditP(P),R=2*
  <div class="pjkpis">${k('flag','#00549A','Entregas',`${entD}<small>de ${ent.length}</small>`,'ent')}${k('check','#1F9D55','Itens concluídos',`${done}<small>de ${L.length}</small>`,'concl')}${k('alert','#E5484D','Atrasados',`${lt.length}<small>${lt.length?'precisam de ação':'nenhum'}</small>`,'atr')}${k('clock','#E8A317','Vencem em 14 dias',`${wk.length}<small>itens</small>`,'prox')}${k('link','#7C5CD6','Viraram demanda',`${dem.length}<small>no Kanban</small>`,'dem')}</div>
  <div class="seg" style="margin:20px 0 14px">${[['geral','Visão geral','grid'],['eap','EAP','layers'],['crono','Cronograma','gantt']].map(([k2,l,i])=>`<button class="${S.ptab===k2?'on':''}" data-act="pjTab" data-x="${k2}">${ic(i,14)}${l}</button>`).join('')}</div>
  ${!P.items.length?pjEmpty(P,e):S.ptab==='eap'?pjEap(P,T):S.ptab==='crono'?pjCrono(P,T):pjGeral(P,T,lt,wk)}</div>`}
-function pjEmpty(P,e){return `<div class="card cp" style="text-align:center;padding:40px 20px"><div style="color:var(--acc);display:grid;place-items:center;margin-bottom:10px">${ic('layers',28)}</div><h3 class="fd" style="font-size:17px">A EAP ainda está vazia</h3><p class="muted" style="margin:6px auto 16px;max-width:440px">Importe a EAP de uma planilha (Excel ou CSV) ou comece criando as fases do projeto.</p>${e?`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn gh" data-act="pjImp">${ic('upload',14)}Importar EAP</button><button class="btn gh" data-act="pjStd">${ic('layers',14)}Criar fases padrão</button><button class="btn acc" data-act="pjItemNew">${ic('plus',14,2.2)}Nova fase</button></div>`:''}</div>`}
+function pjEmpty(P,e){return `<div class="card cp" style="text-align:center;padding:40px 20px"><div style="color:var(--acc);display:grid;place-items:center;margin-bottom:10px">${ic('layers',28)}</div><h3 class="fd" style="font-size:17px">A EAP ainda está vazia</h3><p class="muted" style="margin:6px auto 16px;max-width:440px">Importe a EAP de uma planilha (Excel ou CSV), de uma imagem ou PDF, ou comece criando as fases do projeto.</p>${e?`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn gh" data-act="pjImp">${ic('upload',14)}Importar EAP</button><button class="btn gh" data-act="pjStd">${ic('layers',14)}Criar fases padrão</button><button class="btn acc" data-act="pjItemNew">${ic('plus',14,2.2)}Nova fase</button></div>`:''}</div>`}
 function pjGeral(P,T,lt,wk){const att=[...lt,...pjLeaves(T.root).filter(pjRisk)];
  const ms=[...T.R.map(n=>({n,ph:1})),...Object.values(T.N).filter(n=>n.it.ms).map(n=>({n}))].filter(x=>x.n.fim&&x.n.fim>=TODAY&&pjSt(x.n)!=='concluida').sort((a,b)=>a.n.fim.localeCompare(b.n.fim)).slice(0,5);
  return `<div class="grid g-side"><div class="card cp"><div class="ch"><h3>Andamento por fase</h3><span class="r muted" style="font-size:12px">clique para abrir na EAP</span></div>
@@ -3035,15 +3036,52 @@ function pjConvModal(){const m=S.modal,L=DB.demands.filter(d=>!isClosed(d)&&(isA
  `<button type="button" class="btn gh" data-act="mclose">Cancelar</button><button type="submit" class="btn acc" ${d?'':'disabled'}>${ic('shuffle',14)}Criar projeto</button>`,'wide')}
 /* importar EAP */
 function pjImpModal(){const m=S.modal,P=PJ(S.pj);
- return MB('Importar EAP',`<p class="muted" style="font-size:12.5px">Envie a planilha da EAP (Excel ou CSV). O sistema procura as colunas de <b>código</b> (1, 1.1, 1.1.1…) ou <b>nível</b>, <b>nome</b>, <b>responsável</b>, <b>início</b> e <b>término</b>.</p>
+ return MB('Importar EAP',`<p class="muted" style="font-size:12.5px">Envie a planilha da EAP (Excel ou CSV) ou uma <b>imagem/PDF</b> da EAP — nesse caso o Gemini transcreve os itens. O sistema procura as colunas de <b>código</b> (1, 1.1, 1.1.1…) ou <b>nível</b>, <b>nome</b>, <b>responsável</b>, <b>início</b> e <b>término</b>.</p>
  ${m.rows?`<div class="pjprev" style="max-height:300px;margin-top:12px">${m.rows.map(r=>{const lv=r.code.split('.').length-1;return `<div style="padding-left:${lv*20}px;${lv===0?'font-weight:700':''}"><span class="code">${esc(r.code)}</span>${esc(r.name)}<span class="muted" style="margin-left:auto;font-size:11.5px;white-space:nowrap">${[r.own&&M(r.own)?first(r.own):'',(r.ini?fd(r.ini):'')+(r.fim&&r.fim!==r.ini?' → '+fd(r.fim):'')].filter(Boolean).join(' · ')}</span></div>`}).join('')}</div>
+ ${m.img?`<div class="banner" style="margin-top:10px;background:var(--accs);color:var(--acc);padding:10px 12px;font-size:12.5px;display:flex;gap:8px;align-items:flex-start">${ic('spark',15)}<span>Itens transcritos da imagem pelo Gemini. Confira códigos, nomes e datas antes de importar — o que não estava legível ficou em branco.</span></div>`:''}
  <p class="muted" style="font-size:12px;margin-top:8px">${m.rows.length} itens encontrados em “${esc(m.fname)}”${m.unk?` · ${m.unk===1?'1 responsável não reconhecido ficou':m.unk+' responsáveis não reconhecidos ficaram'} em branco`:''}.</p>
  ${P.items.length?`<div class="pchk" style="margin-top:10px"><label><input type="radio" name="pjimode" value="add" ${m.imode!=='rep'?'checked':''} data-chg="pjimode">Acrescentar à EAP atual</label><label><input type="radio" name="pjimode" value="rep" ${m.imode==='rep'?'checked':''} data-chg="pjimode">Substituir a EAP atual (${P.items.length} itens)</label></div>`:''}`
- :`<label class="pjdrop"><input type="file" hidden accept=".xlsx,.xls,.csv" data-chg="pjfile"><div style="color:var(--acc);display:grid;place-items:center;margin-bottom:8px">${ic('upload',26)}</div><b>${m.busy?'Lendo a planilha…':'Clique para escolher a planilha da EAP'}</b><div class="muted" style="font-size:12px;margin-top:4px">.xlsx, .xls ou .csv — a EAP em PDF, Word ou MS Project pode ser exportada para Excel antes</div></label>`}
+ :`<label class="pjdrop ${m.busy?'busy':''}"><input type="file" hidden accept=".xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp,.heic,.pdf,image/*,application/pdf" data-chg="pjfile" ${m.busy?'disabled':''}><div style="color:var(--acc);display:grid;place-items:center;margin-bottom:8px">${m.busy&&m.img?ic('spark',26):ic('upload',26)}</div><b>${m.busy?esc(m.phase||'Lendo a planilha…'):'Clique para escolher a planilha, imagem ou PDF da EAP'}</b>${m.busy&&m.img?'<div class="recdots" style="justify-content:center;margin-top:8px"><i></i><i></i><i></i></div>':`<div class="muted" style="font-size:12px;margin-top:4px">Planilha: .xlsx, .xls ou .csv · Imagem: .png, .jpg ou .webp · ou .pdf</div>`}</label>`}
  ${m.err?`<div style="color:var(--late);font-size:12.5px;margin-top:10px">${esc(m.err)}</div>`:''}`,
  `${m.rows?`<button class="btn gh" data-act="pjImpReset">Escolher outro arquivo</button>`:''}<button class="btn gh" data-act="mclose">Cancelar</button>${m.rows?`<button class="btn acc" data-act="pjImpGo">${ic('check',14,2.4)}Importar ${m.rows.length} itens</button>`:''}`,'wide')}
 function pjDate(v){if(v==null||v==='')return'';if(typeof v==='number'&&v>20000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return d.toISOString().slice(0,10)}if(v instanceof Date&&!isNaN(v))return iso(v);const s=String(v).trim();let m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);if(m){const y=m[3].length===2?'20'+m[3]:m[3];return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:''}
 function pjPerson(v){if(!v)return null;const s=norm(String(v)).trim();if(!s)return null;const t=TEAM.find(t=>norm(t.name)===s)||TEAM.find(t=>norm(first(t.id))===s.split(' ')[0])||TEAM.find(t=>norm(t.name).includes(s));return t?t.id:false}
+function pjIsImg(f){return /^image\//.test(f.type)||f.type==='application/pdf'||/\.(png|jpe?g|webp|heic|pdf)$/i.test(f.name)}
+function pjImgPrompt(){const team=TEAM.map(t=>t.name).join(', ');
+ return `Você vai transcrever a EAP (Estrutura Analítica do Projeto) que aparece no arquivo acima para importá-la num sistema. Ela pode estar em formato de árvore/organograma, tabela, lista ou cronograma.
+
+Regras:
+- Transcreva TODOS os itens (pacotes, entregas, fases, subitens) na ordem em que aparecem, de cima para baixo e da esquerda para a direita, respeitando a hierarquia.
+- "code": use a numeração que aparece no arquivo (ex.: 1, 1.1, 1.1.2). Se o arquivo não tiver numeração, crie a numeração hierárquica a partir da posição (o item-raiz que é só o nome do projeto NÃO entra; os blocos abaixo dele são 1, 2, 3…).
+- "name": o texto do item exatamente como está escrito, sem resumir nem corrigir.
+- "own": responsável, só se estiver escrito no item. Equipe para referência: ${team}. Senão "".
+- "ini" e "fim": datas de início e término em AAAA-MM-DD, só se estiverem escritas. Senão "". Nunca deduza datas.
+- "dias": esforço/duração em dias, só se estiver escrito (número). Senão 0.
+- "note": outras informações escritas no item (fase, requisitos, descrição), em texto corrido. Senão "".
+- Não invente itens, nomes, responsáveis, datas ou números. O que não estiver legível fica em branco.
+
+Responda APENAS com JSON neste formato:
+{"itens":[{"code":"","name":"","own":"","ini":"","fim":"","dias":0,"note":""}]}`}
+async function pjImgParse(f,ph){
+ if(S.demo||typeof SB==='undefined'||!SB)throw new Error('A leitura de imagem está disponível apenas com login do Hub (fora do modo local).');
+ if(f.size>40*1024*1024)throw new Error('Arquivo muito grande (máx. 40 MB).');
+ const mime=f.type||(/\.pdf$/i.test(f.name)?'application/pdf':/\.png$/i.test(f.name)?'image/png':/\.webp$/i.test(f.name)?'image/webp':'image/jpeg');
+ let name=null;
+ try{
+  const {url}=await recApi('op=start',{mime,size:f.size,name:f.name});
+  let off=0,fin=null;while(off<f.size){const end=Math.min(f.size,off+REC_CHUNK),last=end>=f.size;let tries=0,res;for(;;){try{res=await recApi(`op=chunk&url=${encodeURIComponent(url)}&offset=${off}&final=${last?1:0}`,f.slice(off,end),true);break}catch(e){if(++tries>=3)throw e;await new Promise(r=>setTimeout(r,1500*tries))}}if(last)fin=res.file;off=end}
+  if(!fin||!fin.name)throw new Error('O envio não foi concluído.');name=fin.name;
+  ph('Preparando a imagem…');let state=fin.state,t0=Date.now();while(state==='PROCESSING'){if(Date.now()-t0>3*60*1000)throw new Error('O processamento demorou demais.');await new Promise(r=>setTimeout(r,2500));state=(await recApi('op=status',{name})).state}
+  if(state!=='ACTIVE')throw new Error('O Gemini não conseguiu ler esse arquivo.');
+  ph('O Gemini está lendo a EAP…');
+  const {text}=await recApi('op=analyze',{fileUri:fin.uri,mime:fin.mimeType||mime,prompt:pjImgPrompt()});
+  let o;try{o=JSON.parse(text.replace(/^```(json)?|```$/g,'').trim())}catch(_){throw new Error('A resposta da IA veio num formato inesperado. Tente de novo.')}
+  const its=Array.isArray(o)?o:(o.itens||o.items||[]);let unk=0;const seen=new Set();
+  const rows=its.map(r=>{const code=String(r.code||'').trim().replace(/\.+$/,''),nm=String(r.name||'').trim();if(!code||!nm||!/^\d+(\.\d+)*$/.test(code)||seen.has(code))return null;seen.add(code);let own=null;if(r.own){own=pjPerson(r.own);if(own===false){unk++;own=null}}const ini=pjDate(r.ini),fim=pjDate(r.fim);return {code,name:nm,own,ini,fim:fim||ini,dias:+r.dias||0,note:String(r.note||'').trim()}}).filter(Boolean);
+  if(!rows.length)throw new Error('Não encontrei itens de EAP nesse arquivo. Confira se a imagem está legível.');
+  return {rows,unk};
+ }finally{if(name)recApi('op=delete',{name}).catch(()=>{})}
+}
 async function pjParse(f){const X=await loadXLSX();const wb=X.read(await f.arrayBuffer(),{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];const A=X.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
  const hk=r=>r.map(c=>norm(String(c)).trim());let hi=-1,H=[];for(let i=0;i<Math.min(A.length,25);i++){const h=hk(A[i]);if(h.some(c=>/^(nome|tarefa|atividade|item|descricao|entrega|pacote|nome da tarefa|elemento)/.test(c))){hi=i;H=h;break}}
  if(hi<0)throw new Error('Não encontrei a linha de cabeçalho (procurei colunas como “Código”, “Nome/Tarefa”, “Responsável”, “Início”, “Término”).');
@@ -3121,7 +3159,7 @@ SUBMIT.pjconvform=f=>{const d=D(S.modal.did);if(!d){S.err='Escolha a demanda.';r
 document.addEventListener('change',async e=>{const t=e.target,k=t.dataset&&t.dataset.chg;if(!k||!S.modal)return;
  if(k==='pjcd'){S.modal.did=t.value||null;S.modal.name='';render()}
  if(k==='pjimode'){S.modal.imode=t.value}
- if(k==='pjfile'){const f=t.files&&t.files[0];if(!f)return;S.modal.busy=true;S.modal.err='';render();try{const r=await pjParse(f);S.modal={type:'pjimp',rows:r.rows,unk:r.unk,fname:f.name,imode:'add'}}catch(er){S.modal={type:'pjimp',err:er.message||'Não foi possível ler a planilha.'}}render()}});
+ if(k==='pjfile'){const f=t.files&&t.files[0];if(!f)return;const img=pjIsImg(f);S.modal.busy=true;S.modal.img=img;S.modal.phase=img?'Enviando a imagem…':'Lendo a planilha…';S.modal.err='';render();try{const r=img?await pjImgParse(f,ph=>{if(S.modal&&S.modal.type==='pjimp'){S.modal.phase=ph;render()}}):await pjParse(f);if(!S.modal||S.modal.type!=='pjimp')return;S.modal={type:'pjimp',rows:r.rows,unk:r.unk,fname:f.name,imode:'add',img}}catch(er){console.warn('EAP:',er,er&&er.detail);if(!S.modal||S.modal.type!=='pjimp')return;const msg=er.code==='no_key'?'A chave do Gemini não está configurada no servidor.':er.code==='rate_limited'?'Limite de uso do Gemini atingido. Tente novamente em alguns minutos.':er.message&&!/^HTTP|^gemini$|^internal$|Failed to fetch/.test(er.message)?er.message:'Não foi possível ler o arquivo agora. Tente novamente.';S.modal={type:'pjimp',err:msg}}render()}});
 document.addEventListener('input',e=>{const t=e.target,k=t.dataset&&t.dataset.in;if(k==='pjcn'&&S.modal)S.modal.name=t.value;if(k==='pq'){S.pq=t.value;render();const i=document.getElementById('pjq');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}});
 
 
